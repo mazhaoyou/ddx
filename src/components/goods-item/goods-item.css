@@ -1,0 +1,451 @@
+/* 	
+	我的商品列表-样式
+	薛毅飞 
+ */
+$color-fff: #fff;
+$color-000: #000;
+$color-333: #333;
+$color-666: #666;
+$color-999: #999;
+$color-f2f2f2: #f2f2f2;
+$color-ff911b: #ff911b;
+$color-f1f1f1: #f1f1f1;
+$color-0fc733: #0fc733;
+$color-fff5e7: #fff5e7;
+$color-fa503d: #fa503d;
+$color-f0f0f0: #f0f0f0;
+
+$color-ffa50d: #ffa50d;
+$color-fb6c19: #fb6c19;
+
+$size-24: 24px;
+$size-26: 26px;
+$size-28: 28px;
+$size-32: 32px;
+$size-40: 40px;
+
+.color-666{
+	color: $color-666;
+}
+.goods{
+	background-color: $color-fff;
+	border-bottom-width: 2px;
+	border-style: solid;
+	border-color: $color-f0f0f0;
+}
+.goods:active{
+	background-color: #f7f7fa;
+}
+.goods-item {
+	padding: 28px;
+	flex-direction: row;
+}
+.goods-snapshot,
+.taken-clinch{
+	padding: 0 28px;
+	flex-direction: row;
+	justify-content: space-between;
+	border-style: solid;
+	border-color: $color-f0f0f0;
+}
+.goods-snapshot-id,
+.taken-clinch-peo,
+.taken-clinch-time{
+	font-size: $size-24;
+	line-height: 64px;
+}
+.goods-snapshot{
+	border-bottom-width: 2px;
+}
+.goods-snapshot-status{
+	font-size: $size-28;
+	color: $color-ff911b;
+	line-height: 64px;
+}
+.goods-snapshot-id{
+	color: $color-666;
+}
+.taken-clinch{
+	border-top-width: 2px;
+}
+.taken-clinch-time{
+	color: $color-999;
+}
+.taken-clinch-peo{
+	color: $color-333;
+}
+/* 商品缩略图 */
+.goods-item-img {
+	width: 140px;
+	/* height: 165px; */
+	position: relative;
+	overflow: hidden;
+	margin-right: 20px;
+	padding-top: 20px;
+}
+.goods-img-box{
+	position: absolute;
+	left: 0;
+	top: 20px;
+}
+.goods-image,
+.goods-activity-name,
+.goods-img-box{
+	width: 140px;
+	height: 155px;
+}
+.activity-clinch-del{
+	width: 135px;
+	height: 116px;
+}
+.goods-activity-name,
+.activity-clinch-del{
+	position: absolute;
+}
+.goods-activity-name{
+	left: 0;
+	top: 0;
+}
+.activity-clinch-del{
+	left: 2px;
+	top: 17px;
+}
+.goods-remaining,
+.goods-consumption{
+	position: absolute;
+	width: 140px;
+	height: 26px;
+	background-color: rgba(0, 0, 0, 0.4);
+	left: 0;
+	font-size: 16px;
+	font-weight: 500;
+	color: $color-fff;
+	line-height: 26px;
+	text-align: center;
+}
+.goods-remaining {
+	bottom: 0;
+}
+.goods-consumption {
+	bottom: 28px;
+}
+
+
+/* 禁赛价-start */
+.suspended-price{
+	width: 73px;
+	height: 30px;
+	border-radius: 15px;
+	justify-content: center;
+	align-items: center;
+	position: absolute;
+	left: 0;
+	top: 0;
+	box-sizing: border-box;
+}
+.suspended-price-num{
+	font-size: 18px;
+	font-weight: bold;
+	color: $color-fff;
+	line-height: 28px;
+}
+.suspended-price-icon{
+	width: 30px;
+	height: 30px;
+	border-radius: 50%;
+	position: absolute;
+	top: 0;
+	justify-content: center;
+	align-items: center;
+}
+/* .suspended-not-img{
+	width: 20px;
+	height: 20px;
+} */
+.suspended-unlock{
+	width: 17px;
+	height: 17px;
+}
+.suspended-lock{
+	width: 13px;
+	height: 17px;
+}
+.suspended-price-not,
+.suspended-price-will,
+.suspended-price-start{
+	padding-left: 30px;
+}
+.suspended-not-icon,
+.suspended-will-icon,
+.suspended-start-icon{
+	left: 0;
+}
+/* 即将开始 */
+.suspended-price-start{
+	background-color: rgba(187,187,187,0.85);
+}
+.suspended-start-icon{
+	background-color: rgba(187,187,187,1);
+}
+/* 已禁赛 */
+.suspended-price-has{
+	padding-right: 30upx;
+	background-color: rgba(246,70,53,0.75);
+}
+.suspended-has-icon{
+	right: 0;
+	background-color: rgba(246,70,53,1);
+}
+/* 未禁赛 */
+.suspended-price-not{
+	background-color: rgba(15,197,50,0.75);
+}
+.suspended-not-icon{
+	background-color: rgba(15,197,50,1);
+}
+/* 将禁赛 */
+.suspended-price-will{
+	background-color: rgba(255,181,11,0.75);
+}
+.suspended-will-icon{
+	background-color: rgba(255,181,11,1);
+}
+
+/* 禁赛价-end */
+
+.goods-item-info {
+	width: 534px;
+	justify-content: space-between;
+}
+.goods-item-title,
+.goods-item-countdown,
+.goods-item-price,
+.goods-item-opening,
+.goods-purchase-price,
+.goods-item-clinch,
+.goods-item-clinch-time,
+.return-beans,
+.clinch-del-time{
+	height: 61px;
+}
+
+.direct-purchase-goods{
+	height: 35px;
+}
+
+.goods-item-title{
+	align-items: center;
+	justify-content: space-between;
+	flex-direction: row;
+}
+.goods-title-text{
+	width: 480px;
+	font-size: $size-28;
+	font-weight: 500;
+	color: $color-333;
+	text-overflow: ellipsis;
+}
+.collection-box{
+	padding:15px;
+}
+.collection{
+	width: 30px;
+	height: 30px;
+}
+.goods-num{
+	font-size: $size-24;
+	line-height: 60px;
+	font-weight: 400;
+	color: #999;
+}
+.goods-countdown-desc,
+.goods-countdown-seconds{
+	font-size: $size-24;
+	color: $color-666;
+	font-weight: 400;
+}
+.goods-item-countdown{
+	align-items: center;
+	flex-direction: row;
+}
+.goods-countdown-num{
+	width: 90px;
+	height: 50px;
+	background-color: $color-fff5e7;
+	border-radius: 26px;
+	margin: 0 14px;
+	justify-content: center;
+	align-items: center;
+}
+.goods-countdown-text{
+	font-size: $size-32;
+	font-weight: 500;
+	color: $color-fa503d;
+	text-align: center;
+	line-height: 50px;
+}
+.goods-item-price{
+	flex-direction: row;
+	align-items: flex-end;
+	justify-content: space-between;
+}
+.goods-price-desc{
+	flex-direction: row;
+	align-items: center;
+}
+.goods-current-name{
+	font-size: $size-24;
+	font-weight: 500;
+	color: $color-000;
+}
+.goods-current-price{
+	font-size: $size-40;
+	font-weight: bold;
+	color: $color-fa503d;
+	margin: 0 12px;
+}
+.goods-market-price{
+	font-size: $size-24;
+	font-weight: 500;
+	color: $color-999;
+	text-decoration: line-through;
+	align-items: flex-end;
+}
+.goods-pat-btn{
+	width: 145px;
+	height: 58px;
+	border-radius: 27.5px;
+	font-size: $size-26;
+	font-weight: 400;
+	color: $color-fff;
+	line-height: 58px;
+	text-align: center;
+	background-image: linear-gradient(to bottom right, $color-ffa50d, $color-fb6c19);
+	box-shadow: 0px 10px 8px #f5c196;
+}
+.goods-pat-btn-2{
+	width: 145px;
+	height: 54px;
+	border-radius: 27.5px;
+	font-size: $size-26;
+	font-weight: 400;
+	color: $color-ff911b;
+	line-height: 52px;
+	text-align: center;
+	background-image: linear-gradient(to bottom right, $color-fff, $color-fff);
+	border-width:2px;
+	border-style: solid;
+	border-color: rgba(255,145,27,1);
+}
+.clinch-del-time{
+	
+}
+.clinch-del-time-text{
+	
+}
+.direct-purchase-goods{
+	flex-direction: row;
+	align-items: center;
+}
+.direct-purchase-text{
+	font-size: $size-24;
+	color: #FE9523;
+}
+.goods-item-opening{
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: center;
+}
+.goods-opening-box{
+	flex-direction: row;
+}
+.goods-opening-desc{
+	font-size: $size-24;
+	font-weight: 400;
+	color: $color-666;
+	line-height: 53px;
+}
+.opening-countdown{
+	flex-direction: row;
+	width: 210px;
+	height: 50px;
+	background-color: rgba(255, 244, 229, 1);
+	border-radius: 25px;
+	text-align: center;
+	margin-left: 14px;
+	justify-content: center;
+	align-items: center;
+}
+.opening-countdown-active{
+	background-color: $color-ff911b;
+}
+.opening-countdown-icon{
+	width: 22px;
+	height: 27px;
+	margin-right: 10px;
+}
+.order-countdown{
+	flex-direction: row;
+}
+.order-countdown-text,
+.opening-countdown-time{
+	font-size: $size-32;
+	font-weight: 500;
+	color: rgba(254, 149, 35, 1);
+}
+.countdown-time-acitve{
+	color: $color-fff;
+}
+.goods-opening-time{
+	font-size: $size-24;
+	font-weight: 400;
+	color: $color-666;
+}
+.goods-purchase-price{
+	align-items: center;
+	flex-direction: row;
+}
+.goods-item-purchase{
+	font-size: $size-24;
+	font-weight: 400;
+	color: $color-999;
+}
+.goods-item-clinch{
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: center;
+}
+.goods-clinch-peo,
+.goods-clinch-title{
+	font-size: $size-24;
+	font-weight: 500;
+	color: $color-000;
+}
+.goods-clinch-desc{
+  flex-direction: row;
+	align-items: center;
+}
+.goods-clinch-price{
+	font-size: $size-40;
+	font-weight: bold;
+	color: $color-fa503d;
+}
+.goods-item-clinch-time{
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: center;
+}
+.clinch-time-desc,
+.clinch-time-price{
+	font-size: $size-24;
+	font-weight: 400;
+	color: $color-999;
+}
+.clinch-time-price{
+	text-decoration: line-through;
+}
+.return-beans{
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-between;
+}

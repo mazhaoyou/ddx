@@ -1,0 +1,320 @@
+<!--	
+	我的竞拍活动
+	薛毅飞 
+-->
+<template>
+	<div class="my-bidding">
+		<no-content :isShow="content.isShow" :text="content.text" :desc="content.desc"></no-content>
+		<div class="tabBars">
+			<div class="tabBars-item" v-for="(item, index) in tabBars" :key="item.id" @click="tabBarsTap(index)">
+				<text :class="['tabBars-item-text', current == index ? 'tabBars-text-active' : '']">{{ item.text }}</text>
+				<div class="tabBars-item-selected" :style="{ width: item.selectedWidth + 'px' }"></div>
+			</div>
+		</div>
+		<slider class="slider" @change="sliderChange" @scroll="scrollHandler" :index="current" infinite="false">
+			<div class="slider-content" v-for="(item, index) in tabBars" :key="item.id">
+				<list class="list">
+					<refresh class="loading" v-if="current == 1 || current == 2" @refresh="onPulldownReresh" :display="item.refreshing ? 'show' : 'hide'">
+						<loading-indicator class="loading-icon" v-if="item.refreshing"></loading-indicator>
+						<text class="loading-text">{{ item.refreshing ? '刷新中...' : '下拉刷新' }}</text>
+					</refresh>
+					<cell class="cell" v-for="(goods, gIndex) in tabBars[index].goodsItem" :key="goods.activity_id">
+						<my-goods-item :listItem="goods" :module="1" :index="gIndex" :current="current" :serverTime="serverTime"></my-goods-item>
+					</cell>
+					<loading class="loading" v-if="current == 1 || current == 2" @loading="loadList('add')" :display="item.loadMoreStatus ? 'show' : 'hide'">
+						<text class="loading-text">{{ item.loadMoreStatus == 0 ? '上拉显示更多' : item.loadMoreStatus == 1 ? '正在加载..' : '没有更多数据了' }}</text>
+						<loading-indicator class="loading-icon" v-if="item.loadMoreStatus == 1"></loading-indicator>
+					</loading>
+				</list>
+			</div>
+		</slider>
+	</div>
+</template>
+
+<script>
+import noContent from '@/components/no-content/no-content.vue';
+import myGoodsItem from '@/components/goods-item/my-goods-item.nvue';
+import api from '@/common/http/index.js';
+import storage from '@/common/storage/storage.js';
+let windowWidth = uni.upx2px(750),
+	refreshAnimation;
+let list = [];
+export default {
+	components: {
+		noContent,
+		myGoodsItem
+	},
+	data() {
+		return {
+			biddingInterval: null,
+			len: 10, //每页条数
+			current: 0, //当前选中项
+			serverTime: '', //服务器时间
+			content: {
+				//控制无数据展示
+				isShow: false,
+				text: '',
+				desc: ''
+			},
+			tabBars: [
+				{
+					text: '正在拍',
+					id: 'getMyBiddingList',
+					selectedWidth: 0,
+					noContentText: '您当前没有参与任何竞拍活动',
+					goodsItem: [],
+					count: 1
+				},
+				{
+					text: '我拍中',
+					id: 'getMyWonBidList',
+					selectedWidth: 0,
+					noContentText: '您还没有拍中过任何宝贝哦，\n有喜欢的，赶紧去参拍吧！',
+					goodsItem: [],
+					refreshing: 0,
+					loadMoreStatus: 0,
+					count: 1
+				},
+				{
+					text: '未拍中',
+					id: 'getMyFailedBidList',
+					selectedWidth: 0,
+					noContentText: '您还没有未拍中的商品',
+					goodsItem: [],
+					refreshing: 0,
+					loadMoreStatus: 0,
+					count: 1
+				},
+				{
+					text: '已关注',
+					id: 'getMyConcernedBidList',
+					selectedWidth: 0,
+					noContentText: '您没有收藏任何竞拍活动，\n收藏活动，开拍前小冠君会提醒你哦，\n快去收藏吧！',
+					goodsItem: [],
+					count: 1
+				},
+				{
+					text: '已委托',
+					id: 'getMyCommissionBidList',
+					selectedWidth: 0,
+					noContentText: '您没有委托任何竞拍活动，\n快去委托吧！',
+					goodsItem: [],
+					count: 1
+				}
+			]
+		};
+	},
+	created() {
+		const that = this;
+		uni.getStorage({
+			key: 'biddingIndex',
+			success: res => {
+				that.current = res.data;
+			},
+			complete: () => {
+				that.tabBars[that.current].selectedWidth = 66;
+				that.isRealTimeBrush();
+			}
+		});
+		// #ifdef APP-PLUS
+		windowWidth = WXEnvironment.deviceWidth / WXEnvironment.scale;
+		// #endif
+	},
+	methods: {
+		// 点击导航
+		tabBarsTap(index) {
+			if (this.current !== index) {
+				console.log(this.current, index);
+				this.tabBars[this.current].selectedWidth = 0;
+				this.tabBars[index].selectedWidth = 66;
+				this.current = index;
+				this.isRealTimeBrush();
+			}
+		},
+		// 监听滑动
+		sliderChange(e) {
+			this.tabBarsTap(e.index);
+		},
+		// 滑动时
+		scrollHandler(e) {
+			if (e.offsetXRatio !== 0) this.content.isShow = false;
+		},
+		//下拉完成
+		onPulldownReresh() {
+			if (this.current == 1 || this.current == 2) {
+				this.loadList('refresh');
+			}
+		},
+		// 是否实时刷新
+		isRealTimeBrush() {
+			const that = this;
+			let tabItem = that.tabBars[that.current];
+			switch (that.current) {
+				case 0:
+				case 3:
+				case 4:
+					that.requestList('refresh');
+					clearInterval(that.biddingInterval);
+					that.biddingInterval = setInterval(() => {
+						that.requestList('refresh');
+					}, 1000);
+					break;
+				case 1:
+				case 2:
+					clearInterval(that.biddingInterval);
+					that.requestList('refresh');
+					break;
+			}
+		},
+		//上拉加载(add)||下拉刷新 (refresh)
+		loadList(type) {
+			const that = this;
+			let tabItem = that.tabBars[that.current];
+			switch (type) {
+				case 'refresh':
+					tabItem.refreshing = true;
+					break;
+				case 'add':
+					if (tabItem.loadMoreStatus === 2) {
+						tabItem.loadMoreStatus = 1;
+						setTimeout(() => {
+							tabItem.loadMoreStatus = 2;
+						}, 100);
+						return;
+					}
+					tabItem.loadMoreStatus = 1;
+					break;
+			}
+			setTimeout(function() {
+				that.requestList(type);
+			}, 1000);
+		},
+		//获取商品  type有值证明此项有下拉刷新上拉加载，否则为实时刷
+		requestList(type) {
+			const that = this;
+			let tabItem = that.tabBars[that.current];
+			if (type == 'refresh') tabItem.count = 1;
+			if (type == 'add') tabItem.count++;
+			let data = {
+				activityType: that.current,
+				token: storage.isAuthed(),
+				start: tabItem.count,
+				len: that.len
+			};
+			api.getActivityList(data)
+				.then(res => {
+					res = res.data;
+					if (res.code == '0001') {
+						if (that.current == 0 || that.current == 3 || that.current == 4) that.serverTime = res.data.serverTime;
+						res = res.data.order[that.current].activityList;
+						if (type == 'refresh') tabItem.goodsItem = [];
+						if (type == 'add') tabItem.loadMoreStatus = res.length == 0 ? 2 : 0;
+						res.forEach(item => {
+							tabItem.goodsItem.push(item);
+						});
+						//无数据展示
+						if (tabItem.goodsItem.length == 0) {
+							that.content.desc = tabItem.noContentText;
+							that.content.isShow = true;
+						} else {
+							that.content.isShow = false;
+						}
+						if (type == 'refresh') {
+							clearInterval(refreshAnimation);
+							tabItem.refreshing = false;
+							tabItem.loadMoreStatus = 0;
+							tabItem.count = 1;
+						};
+					} else {
+						uni.showToast({
+							title: res.message,
+							duration: 3000
+						});
+					}
+				})
+				.catch(err => {
+					console.log('我的竞拍=' + that.current + JSON.stringify(err));
+				});
+		}
+	}
+};
+</script>
+
+<style lang="scss" scoped>
+/* 导航栏-start */
+.my-bidding {
+	flex: 1;
+}
+.tabBars {
+	width: 750px;
+	height: 84px;
+	background-color: #f2f2f2;
+	flex-direction: row;
+	padding: 0 10px;
+}
+.tabBars-item {
+	flex: 1;
+	position: relative;
+}
+.tabBars-item-text {
+	font-size: 28px;
+	line-height: 76px;
+	color: #333333;
+	text-align: center;
+}
+.tabBars-text-active {
+	color: #ff911b;
+}
+.tabBars-item-selected {
+	width: 66px;
+	height: 8px;
+	background-color: #ff911b;
+	border-radius: 4px;
+	position: absolute;
+	bottom: 0;
+	left: 40px;
+}
+/* 导航栏-end */
+/* 内容-start */
+.slider {
+	flex: 1;
+	background-color: #f0f0f0;
+	flex-direction: row;
+}
+.slider-content {
+	flex: 1;
+	width: 750px;
+}
+.list {
+	width: 750px;
+	flex: 1;
+}
+.cell {
+	width: 750px;
+	margin-bottom: 1px;
+}
+.refresh {
+	flex-direction: row;
+	justify-content: center;
+}
+.loading {
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
+	width: 750px;
+	height: 80px;
+	padding: 20px 0 10px;
+}
+.loading-text {
+	font-size: 28px;
+	color: #888;
+}
+.loading-icon {
+	height: 40px;
+	width: 40px;
+	color: #999999;
+	margin-right: 10px;
+}
+
+/* 内容-end */
+</style>

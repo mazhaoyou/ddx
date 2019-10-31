@@ -1,0 +1,525 @@
+<!--	
+	我的竞拍-商品组件
+	薛毅飞 
+-->
+<template>
+	<div class="goods" :style="{ borderTopWidth: goodsMarginTop }" @click="enterDetails">
+		<div class="goods-snapshot" v-if="listItem.orderNo">
+			<text class="goods-snapshot-id">活动编号：{{ listItem.orderNo }}</text>
+			<text class="goods-snapshot-status" v-if="snapshotStatus">{{ snapshotStatus }}</text>
+			<text class="goods-snapshot-status" v-if="orderStatus">{{ orderStatus }}</text>
+		</div>
+		<div class="goods-item">
+			<div class="goods-item-img">
+				<image class="goods-image" :src="listItem.goodsThumbnail"></image>
+				<div class="goods-img-box">
+					<image class="activity-clinch-del" v-if="listItem.successfulTradePrice" src="../../static/auction/activity_clinch_del.png"></image>
+					<image class="goods-activity-name" src="../../static/auction/goods_activity.png"></image>
+					<text class="goods-consumption" v-if="listItem.consumptionBean">已消耗{{ listItem.consumptionBean }}福豆</text>
+					<text class="goods-remaining" v-if="listItem.commissionBean">委托剩余{{ listItem.commissionBean }}福豆</text>
+					<div class="suspended-price suspended-price-start" v-if="listItem.warningState == 0">
+						<text class="suspended-price-num suspended-start-num">{{ listItem.forbiddenPrice }}</text>
+						<div class="suspended-price-icon suspended-start-icon"><image class="suspended-lock" src="../../static/auction/lock.png"></image></div>
+					</div>
+					<div class="suspended-price suspended-price-not" v-else-if="listItem.warningState == 1">
+						<text class="suspended-price-num suspended-not-num">{{ listItem.forbiddenPrice }}</text>
+						<div class="suspended-price-icon suspended-not-icon"><image class="suspended-unlock" src="../../static/auction/unlock.png"></image></div>
+					</div>
+					<div class="suspended-price suspended-price-will" v-else-if="listItem.warningState == 2">
+						<text class="suspended-price-num suspended-will-num">{{ listItem.forbiddenPrice }}</text>
+						<div class="suspended-price-icon suspended-will-icon"><image class="suspended-unlock" src="../../static/auction/unlock.png"></image></div>
+					</div>
+					<div class="suspended-price suspended-price-has" v-else-if="listItem.warningState == 3">
+						<text class="suspended-price-num suspended-has-num">{{ listItem.forbiddenPrice }}</text>
+						<div class="suspended-price-icon suspended-has-icon"><image class="suspended-lock" src="../../static/auction/lock.png"></image></div>
+					</div>
+				</div>
+			</div>
+			<div class="goods-item-info">
+				<!-- 标题 -->
+				<div class="goods-item-title" :style="{ height: titleStyle.tHeight + 'px' }">
+					<text class="goods-title-text" :style="{ lines: titleStyle.line, lineHeight: lineHeight + 'px' }">{{ listItem.goodsName }}</text>
+					<div class="collection-box" @click="setFocus"><image class="collection" v-if="listItem.whetherAttention" :src="isCollection"></image></div>
+					<text class="goods-num" v-if="listItem.goodsAmount">×{{ listItem.goodsAmount }}</text>
+				</div>
+
+				<!-- 出价倒计时 -->
+				<div class="goods-item-countdown" v-if="listItem.countDown">
+					<text class="goods-countdown-desc">出价倒计时</text>
+					<div class="goods-countdown-num">
+						<!-- <uni-countdown color="#FA503D" :showHour="false" :showMinute="false" :second="listItem.countDown" /> -->
+						<text class="goods-countdown-text">{{ listItem.countDownLeftTime }}</text>
+					</div>
+					<text class="goods-countdown-seconds">秒</text>
+				</div>
+
+				<!-- 当前价 -->
+				<div class="goods-item-price" v-if="listItem.currentPrice">
+					<div class="goods-price-desc">
+						<text class="goods-current-name">当前价:</text>
+						<text class="goods-current-price">{{ listItem.currentPrice }}</text>
+						<text class="goods-market-price">{{ listItem.marketPrice }}</text>
+					</div>
+					<text class="goods-pat-btn" v-if="listItem.countDownLeftTime">马上拍</text>
+				</div>
+
+				<!-- 距离开场 -->
+				<div class="goods-item-opening" v-if="listItem.activityStartTime">
+					<div class="goods-opening-box">
+						<text class="goods-opening-desc">距离开场</text>
+						<div :class="['opening-countdown', isOneHour ? 'opening-countdown-active' : '']">
+							<image class="opening-countdown-icon" :src="countdownIcon"></image>
+							<!-- <uni-countdown v-if="isOneHour" fontColor="#ffffff" :timer="countdown"></uni-countdown> -->
+							<uni-countdown v-if="isOneHour" :minute="i" :second="s" />
+							<text v-else :class="['opening-countdown-time', isOneHour ? 'countdown-time-acitve' : '']">{{ countdown }}</text>
+						</div>
+					</div>
+					<text class="goods-opening-time">{{ startTime }}</text>
+				</div>
+
+				<!-- 直购价 -->
+				<div class="goods-purchase-price" v-if="listItem.activityStartTime && listItem.marketPrice">
+					<text class="goods-item-purchase">直购价：￥{{ listItem.marketPrice }}</text>
+				</div>
+				<!-- 成交人 -->
+				<div class="goods-item-clinch" v-if="module == 0">
+					<text class="goods-clinch-peo" v-if="listItem.nickname">成交人：{{ listItem.nickname }}</text>
+					<div class="goods-clinch-desc" v-if="listItem.successfulTradePrice">
+						<text class="goods-clinch-title">成交价：</text>
+						<text class="goods-clinch-price">{{ listItem.successfulTradePrice }}</text>
+					</div>
+				</div>
+
+				<!-- 成交时间 -->
+				<div class="goods-item-clinch-time" v-if="listItem.createTime && module == 0">
+					<text class="clinch-time-desc">成交时间：{{ clinchDealTime }}</text>
+					<text class="clinch-time-price">{{ listItem.marketPrice }}</text>
+				</div>
+
+				<!-- 订单倒计时 -->
+				<div class="goods-item-opening" v-if="listItem.endTime">
+					<div class="goods-opening-box">
+						<text class="goods-opening-desc">订单倒计时</text>
+						<div class="opening-countdown">
+							<image class="opening-countdown-icon" :src="countdownIcon"></image>
+							<div class="order-countdown">
+								<text class="order-countdown-text">{{ time.h }}:</text>
+								<text class="order-countdown-text">{{ time.m }}:</text>
+								<text class="order-countdown-text">{{ time.s }}</text>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- 直购返金豆 -->
+				<div class="return-beans" v-if="module == 1 && listItem.returnBeans">
+					<div class="goods-item-countdown">
+						<text class="goods-countdown-desc">直购返</text>
+						<div class="goods-countdown-num">
+							<text class="goods-countdown-text">{{ listItem.returnBeans }}</text>
+						</div>
+						<text class="goods-countdown-seconds">金豆</text>
+					</div>
+					<div>
+						<text class="goods-item-purchase color-666" v-if="listItem.marketPrice">直购价：￥{{ listItem.marketPrice }}</text>
+					</div>
+				</div>
+
+				<!-- 成交价 -->
+				<div class="goods-item-price" v-if="listItem.successfulTradePrice">
+					<div class="goods-price-desc">
+						<text class="goods-current-name">成交价:</text>
+						<text class="goods-current-price">{{ listItem.successfulTradePrice }}</text>
+						<text class="goods-market-price">{{ listItem.marketPrice }}</text>
+					</div>
+					<text class="goods-pat-btn" v-if="listItem.activityState == 0">去下单</text>
+					<text class="goods-pat-btn" v-if="listItem.returnBeans">去直购</text>
+				</div>
+				
+				<!-- 成交时间 -->
+				<div class="clinch-del-time" v-if="current == 1 && listItem.createTime && listItem.activityState !== 0">
+					<text class="taken-clinch-time">成交时间：{{ clinchDealTime }}</text>
+				</div>
+
+				<!-- 直购品返回金豆 -->
+				<div class="direct-purchase-goods" v-if="module == 2 && listItem.returnBeans" :style="{ height: titleStyle.pHeight + 'px' }">
+					<text class="direct-purchase-text">本单返还{{ listItem.returnBeans }}金豆</text>
+				</div>
+
+				<!-- 应付款/实付款 -->
+				<div class="goods-item-price" v-if="listItem.payPrice">
+					<div class="goods-price-desc">
+						<text class="goods-current-name">{{ isPayment }}付款:</text>
+						<text class="goods-current-price">￥{{ listItem.payPrice }}</text>
+					</div>
+					<div v-if="isShowBtn">
+						<text v-if="listItem.orderStatus == 0" class="goods-pat-btn" @click="orderBtn">{{ orderListBtn }}</text>
+						<text v-else class="goods-pat-btn-2" @click="orderBtn">{{ orderListBtn }}</text>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="taken-clinch" v-if="listItem.createTime && listItem.activityState !== 1 && listItem.activityState !== 2">
+			<text class="taken-clinch-peo" v-if="listItem.nickname">成交人：{{ listItem.nickname }}</text>
+			<text class="taken-clinch-time">成交时间：{{ clinchDealTime }}</text>
+		</div>
+	</div>
+</template>
+
+<script>
+import uniCountdown from "@/components/uni-countdown/uni-countdown.nvue";
+import {time} from '@/common/time.js';
+import api from '@/common/http/index.js';
+import { formatDate } from '@/common/filters.js';
+
+export default {
+	components: {
+		uniCountdown
+	},
+	props: ['listItem', 'index', 'module', 'current'],
+	props: {
+		listItem: {
+			type: Object,
+			default: {}
+		},
+		index: {
+			type: Number,
+			default: 0
+		},
+		module: { // 1 = 我的竞拍  2 = 我的订单
+			type: Number,
+			default: 1
+		},
+		current: { // 当前选项卡的索引
+			type: Number,
+			default: 0
+		},
+		serverTime: {
+			type: String,
+			default: ''
+		}
+	},
+	data() {
+		return {
+			dataTime: this.listItem.activityStartTime, //记录开始时间
+			startTime: null ,//计算后的开始时间,
+			isOneHour: false,
+			countdown: '00:00:00', //倒计时时间
+			endTime: this.listItem.endTime,  //记录下单截止时间
+			orderStatu: this.listItem.orderStatus, //记录订单状态
+			focus: this.listItem.whetherAttention,
+			activityState: this.listItem.activityState, //计算活动状态
+			timestamp: "", //记录点击事件时间戳
+			h: '00', //小时
+			i: '00', //分钟
+			s: '00', //秒
+			time: { //订单倒计时
+				d: "00",
+				h: "00",
+				m: "00",
+				s: "00"
+			},
+		}
+	},
+	onLoad() {
+	},
+	computed: {
+		goodsMarginTop() { //有活动编号的商品上边距
+			let marginTop = 0;
+			if( this.listItem.orderNo && this.index !== 0 ) marginTop = '20px';
+			return marginTop;
+		},
+		isShowBtn() { //是否显示订单按钮
+			return this.orderStatu == 0 || this.orderStatu == 2 || this.orderStatu == 3 ? true : false;
+		},
+		countdownIcon() { //倒计时icon
+			return this.isOneHour ? '../../static/auction/timing.png' : '../../static/auction/timing_active.png';
+		},
+		isCollection() { //收藏计算
+			return this.focus == 0 ? '../../static/auction/not_collection.png' : '../../static/auction/collection.png';
+		},
+		isPayment() {  //应付款及实付款的显示
+			return this.listItem.orderStatus > 0 ? '实' : '应';
+		},
+		clinchDealTime() { //计算成交时间
+			return formatDate( this.listItem.createTime, 0);
+		},
+		titleStyle() { //计算标题显示行数及高度
+			let style = {
+				line: 1,
+				tHeight: 61,
+				lineHeight: 61,
+				pHeight: 40
+			};
+			if( this.module == 2 ){
+				if( !this.listItem.endTime ){
+					style.line = 2;
+					style.tHeight = 90;
+					style.lineHeight = 50;
+					style.pHeight = 40;
+				};
+			};
+			return style;
+		},
+		snapshotStatus() {  //计算活动状态
+			let status;
+			switch ( this.activityState ){
+				case 1:
+					status = '已下单';
+					break;
+				case 2:
+					status = '已超时';
+					break;
+			};
+			return status;
+		},
+		orderStatus() {  //计算订单状态
+			let status;
+			switch( this.orderStatu ){
+				case 0:
+					status = '待付款';
+					break;
+				case 1:
+					status = '待发货';
+					break;
+				case 2:
+					status = '待收货';
+					break;
+				case 3:
+					status = '待评价';
+					break;
+				case 4:
+					status = '已完成';
+					break;
+				case 5:
+					status = '已取消';
+					break;
+				case 6:
+					status = '已超时';
+					break;
+				case 7:
+					status = '异常订单';
+					break;
+			};
+			return status;
+		},
+		orderListBtn() { //订单按钮计算
+			let orderBtntext;
+			switch( this.orderStatu ){
+				case 0:
+					orderBtntext = '去支付';
+					break;
+				case 2:
+					orderBtntext = '确认收货';
+					break;
+				case 3:
+					orderBtntext = '评价晒单';
+					break;
+				default:
+					orderBtntext = '';
+					break;
+			};
+			return orderBtntext;
+		}
+	},
+	created() {
+		// 距离开场倒计时
+		if(this.dataTime) {
+			let calculateTime = time.getDaysNum(this.serverTime, this.dataTime);
+			let startDate = new Date(Number(this.dataTime));
+			let month = startDate.getMonth()+1;
+			let days = startDate.getDate();
+			let hours = startDate.getHours() < 10 ? '0' + startDate.getHours() : startDate.getHours();
+			let minutes = startDate.getMinutes() < 10 ? '0' + startDate.getMinutes() : startDate.getMinutes();
+			let seconds = startDate.getSeconds() < 10 ? '0' + startDate.getSeconds() : startDate.getSeconds();
+			//判断显示日期
+			switch (calculateTime.days) {
+				case 0:
+					this.startTime = '今天';
+					break;
+				case 1:
+					this.startTime = '明天';
+					break;
+				default:
+					this.startTime = month + '月' + days + '日';
+					break;
+			}
+			if (calculateTime.days == 0 && calculateTime.hours < 1) {
+				this.isOneHour = true;
+				this.i = Number(calculateTime.minutes);
+				this.s = Number(calculateTime.seconds);
+			} else {
+				this.countdown = hours + ':' + minutes + ':' + seconds;
+			};
+		};
+		// 订单倒计时
+		if(this.endTime){
+			let that = this;
+			let interval = setInterval(function() {
+				let date = that.endTime - (new Date().getTime()); //计算剩余的毫秒数
+				if(date <= 0){
+					clearInterval(interval);
+				}else{
+					that.time.d = parseInt(date / 1000 / 60 / 60 / 24 , 10); //计算剩余的天数
+					that.time.h = parseInt(date / 1000 / 60 / 60 % 24 , 10); //计算剩余的小时
+					that.time.h = that.time.d * 24 + that.time.h;
+					if(that.time.h < 10){ 
+						 that.time.h = "0" +　that.time.h
+					};
+					that.time.m = parseInt(date / 1000 / 60 % 60, 10);//计算剩余的分钟
+					if(that.time.m < 10){
+						 that.time.m = "0" +　that.time.m
+					};
+					that.time.s = parseInt(date / 1000 % 60, 10);//计算剩余的秒数 
+					if(that.time.s < 10){
+						 that.time.s = "0" +　that.time.s
+					};
+					return that.time.D+that.time.h+that.time.m+that.time.s;	
+				}
+			},1000);
+		};
+	},
+	methods: {
+		// 进入详情
+		enterDetails(e) {
+			let url;
+			let activityId = this.listItem.activityId;
+			/* 防止多次执行 */
+			let poorMs = time.getPoorMs(this.timestamp, e.timestamp);
+			if( poorMs <= 1000 ) return false;
+			this.timestamp = e.timestamp;
+			/*
+				this.module => 1:我的竞拍 2:我的订单
+				this.current => 0:正在拍 1:我拍中 2:未拍中 3:已关注 4:已委托
+				this.listItem.activityState => 0:去下单 1:已下单 2:已超时
+				this.listItem.type => 0:未开始 1:正在进行
+			*/
+			if( this.module == 1 ){
+				switch( this.current ){
+					case 0:
+						url = "/pages/auction-detailsing/auction-detailsing?activityId=" + activityId;
+						break;
+					case 1:
+						if( this.listItem.activityState == 0 ) url = "/pages/confirm-order/confirm-order?activityId=" + activityId;
+						break;
+					case 2:
+						url = "/pages/auction-detailsed/auction-detailsed?snapshotId=" + this.listItem.snapshotId;
+						break;
+					case 3:
+					case 4:
+						if( this.listItem.type == 0 ){
+							url = "/pages/auction-details/auction-details?activityId=" + activityId;
+						}else{
+							url = "/pages/auction-detailsing/auction-detailsing?activityId=" + activityId;
+						};
+						break;
+				};
+			}else if( this.module == 2 ){
+				url = "/pages/order-details/order-details?orderId=" + this.listItem.orderId + "&orderStatus=" + this.listItem.orderStatus;
+			};
+			uni.navigateTo({
+				url: url
+			});
+		},
+		//确定收货
+		confirmGoods() {
+			const that = this;
+			let orderId = that.listItem.orderId;
+			let returnBeans = that.listItem.returnBeans;
+			let data = {
+				orderId: orderId,
+				orderStatus: "4"
+			};
+			api.setOrderStatus(data)
+				.then(res => {
+					res = res.data;
+					if (res.code == '0001') {
+						uni.navigateTo({
+							url:  "/pages/confirm-goods/confirm-goods?orderId=" + orderId + "&returnBeans=" + returnBeans,
+						});
+						uni.showToast({
+							title: "收货成功",
+							icon: 'success',
+							duration: 2000
+						});
+					} else {
+						uni.showToast({
+							title: res.message,
+							icon: 'none'
+						});
+					}
+				})
+				.catch(err => {
+					uni.showToast({
+						title: '服务异常'
+					});
+				});
+		},
+		// 点击订单按钮
+		orderBtn(e) {
+			/* 防止多次执行 */
+			let poorMs = time.getPoorMs(this.timestamp, e.timestamp);
+			if( poorMs <= 1000 ) return false;
+			this.timestamp = e.timestamp;
+
+			let orderId = this.listItem.orderId;
+			if( this.orderStatu == 0 ){ //去支付
+				uni.navigateTo({
+					url: "/pages/cash-desk/cash-desk?orderId=" + orderId + "&payMoney=" + this.listItem.payPrice
+				});
+			}else if( this.orderStatu == 2 ){ //确认收货
+				var that = this;
+				uni.showModal({
+					title: '小冠优选',
+					content: '亲，确定收货吗？',
+					confirmText: '确认收货',
+					success: function (res) {
+						if (res.confirm) {
+							that.confirmGoods();
+						};
+					}
+				});
+			}else if( this.orderStatu == 3 ){ //评价晒单
+				uni.navigateTo({
+					url:  "/pages/evaluation-list/evaluation-list?orderId=" + orderId
+				});
+			};
+		},
+		// 设置关注状态
+		setFocus() {
+			let that = this;
+			let data = {
+				activityId: that.listItem.activityId
+			};
+			api.setFocusState(data)
+				.then(res => {
+					res = res.data;
+					if( res.code == '0001' ){
+						let focus;
+						if( that.focus == 0 ){
+							that.focus = 1;
+							focus = '关注成功';
+						}else{
+							that.focus = 0;
+							focus = '已取消关注';
+						};
+						uni.showToast({
+							title: focus,
+							duration: 3000
+						});
+					}else{
+						uni.showToast({
+							title: res.message,
+							duration: 5000
+						});
+					};
+				})
+				.catch(err => {
+					console.log("设置关注状态="+JSON.stringify(err))
+				});
+		}
+	}
+}
+</script>
+
+<style lang="scss" scoped src="./goods-item.css"></style>

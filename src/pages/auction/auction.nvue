@@ -1,0 +1,385 @@
+<!--	
+	竞拍列表
+	薛毅飞 
+-->
+<template>
+	<div class="auction">
+		<!-- <no-content :isShow="content.isShow" :text="content.text" :desc="content.desc"></no-content> -->
+		<div class="nav-bar">
+			<scroller class="scroller" scroll-direction="horizontal" show-scrollbar="false">
+				<div :class="['scroller-tab-list', index == tabCurrentIndex ? 'scroller-tab-list-select' : '']" v-for="(item, index) in tabBars" :key="item.classType" :ref="'tabBar' + index" @click="clickGoodsTab(index)">
+					<!-- <image class="scroller-active" src="../../static/auction/tab_active.png" v-if="index == tabCurrentIndex"></image> -->
+					<image class="scroller-img" :src="tabImg[index]"></image>
+					<text :class="['scroller-text', tabCurrentIndex == index ? 'scroller-text-acitve' : '']">{{ item.className }}</text>
+				</div>
+			</scroller>
+		</div>
+		<div class="goods-tab">
+			<div class="goods-tab-item" v-for="(item, index) in items" :key="index" @click="clickTab(event, index)">
+				<text :class="['goods-tab-item-text', index == current ? 'goods-tab-item-select' : '']">{{ item.title }}</text>
+				<div class="goods-tab-selected" :style="{ width: item.selectedWidth + 'px' }"></div>
+			</div>
+		</div>
+		<slider class="slider" @change="sliderChange" @scroll="scrollHandler" :index="tabCurrentIndex" infinite="false">
+			<div class="slider-content" v-for="(tab, t) in tabBars" :key="tab.id">
+				<list class="list" v-for="(list, l) in tabBars[t].listArr" :key="l" v-if="current === l">
+					<refresh class="loading" v-if="current == 1 || current == 2" @refresh="onPulldownReresh" :display="list.refreshing ? 'show' : 'hide'">
+						<loading-indicator class="loading-icon" v-if="list.refreshing"></loading-indicator>
+						<text class="loading-text">{{ list.refreshing ? '刷新中...' : '下拉刷新' }}</text>
+					</refresh>
+					<cell class="cell" v-for="(goods, g) in tabBars[t].listArr[l].list" :key="g">
+						<goods-item :listItem="goods" :current="current" :serverTime="serverTime"></goods-item>
+					</cell>
+					<loading class="loading" v-if="current == 1 || current == 2" @loading="loadList('add')" :display="list.loadMoreStatus ? 'show' : 'hide'">
+						<text class="loading-text">{{ list.loadMoreStatus == 0 ? '上拉显示更多' : list.loadMoreStatus == 1 ? '正在加载..' : '已全部加载完毕' }}</text>
+						<loading-indicator class="loading-icon" v-if="list.loadMoreStatus == 1"></loading-indicator>
+					</loading>
+				</list>
+			</div>
+		</slider>
+		<div class="no-content" v-if="isShow">
+			<image class="no-content-img" src="../../static/public/no_content.png"></image>
+			<text class="no-content-text">{{ text }}</text>
+			<text class="no-content-desc">{{ desc }}</text>
+		</div>
+	</div>
+</template>
+
+<script>
+import noContent from '@/components/no-content/no-content.vue';
+import goodsItem from '@/components/goods-item/goods-item.nvue';
+import api from '@/common/http/index.js';
+import storage from '@/common/storage/storage.js';
+const dom = weex.requireModule('dom');
+let windowWidth = uni.upx2px(750),
+	refreshAnimation;
+export default {
+	components: {
+		goodsItem
+	},
+	data() {
+		return {
+			len: 10, //每页加载10条
+			tabCurrentIndex: 0,
+			current: 0, // 0->正在热拍 1->即将开始 2->往期成交
+			offsetLeft: 40,
+			oldIndex: 0,
+			goodsUrl: '', //请求链接
+			goodsList: [],
+			tabBars: [{}, {}, {}, {}], //分类导航
+			tabImg: [], //分类导航icon
+			platform: null, //设备信息
+			serverTime: '', //服务器时间
+			content: {
+				//控制无数据展示
+				isShow: true,
+				text: '宝贝们正在赶来中，\n真心喜欢的话，可以提前委托福豆哦。',
+				desc: ''
+			},
+			items: [
+				//选项卡tab
+				{
+					title: '正在热拍',
+					url: '/activity/getSnappingUpList',
+					selectedWidth: 166,
+					noContentText: '宝贝们正在赶来中，\n真心喜欢的话，可以提前委托福豆哦。'
+				},
+				{
+					title: '即将开始',
+					url: '/activity/getStartImmediatelyList',
+					selectedWidth: 0,
+					noContentText: '宝贝们正在赶来中，\n真心喜欢的话，可以提前委托福豆哦。'
+				},
+				{
+					title: '往期成交',
+					url: '/activity/getRecentDealList',
+					selectedWidth: 0,
+					noContentText: '宝贝们正在赶来中，\n真心喜欢的话，可以提前委托福豆哦。'
+				}
+			]
+		};
+	},
+	created() {
+		const that = this;
+		this.loadTabbars();
+		this.goodsUrl = this.items[0].url;
+		// #ifdef APP-PLUS
+		windowWidth = WXEnvironment.deviceWidth / WXEnvironment.scale;
+		// #endif
+		//获取设备信息
+		uni.getSystemInfo({
+			success: function(res) {
+				that.platform = res.platform;
+			}
+		});
+	},
+	computed: {},
+	methods: {
+		//获取顶部选项卡
+		loadTabbars() {
+			const that = this;
+			let data = {
+				token: ''
+			};
+			api.getBiddingTab(data)
+				.then(res => {
+					res = res.data;
+					if (res.code == '0001') {
+						res = res.data.labelList;
+						res.forEach(item => {
+							item.listArr = [];
+							for (let i = 0; i < that.items.length; i++) {
+								if (i == 0) {
+									item.listArr.push({
+										list: []
+									});
+								} else {
+									item.listArr.push({
+										list: [],
+										refreshing: 0,
+										loadMoreStatus: 0,
+										count: 1
+									});
+								}
+							}
+						});
+						that.tabBars = res;
+						for (let [index, item] of that.tabBars.entries()) {
+							index == 0 ? that.tabImg.push(item.selectedIcon) : that.tabImg.push(item.unselectedIcon);
+						}
+						that.getNovice();
+					} else {
+						uni.showToast({
+							title: res.message,
+							duration: 3000
+						});
+					}
+				})
+				.catch(err => {
+					console.log('竞拍导航栏目=' + JSON.stringify(err));
+				});
+		},
+		//默认选中新手场
+		getNovice() {
+			const that = this;
+			uni.getStorage({
+				key: 'noviceField',
+				success(res) {
+					that.clickGoodsTab(res.data);
+					//删除新手场标识
+					uni.removeStorage({
+						key: 'noviceField'
+					});
+				},
+				fail() {
+					that.isRealTimeBrush('refresh', true);
+				}
+			});
+		},
+		//顶部选项卡点击
+		clickGoodsTab(index) {
+			this.tabIconSwitch(index);
+			this.tabCurrentIndex = index;
+		},
+		// 滑动时
+		scrollHandler(e) {
+			if (e.offsetXRatio !== 0) this.content.isShow = false;
+		},
+		//监听滑动切换
+		async sliderChange(e) {
+			const index = typeof e === 'object' ? e.index : e;
+			const el = this.$refs['tabBar' + index][0];
+			let elSize = await this.getElSize(el);
+			this.tabIconSwitch(index);
+			this.tabCurrentIndex = index;
+			this.oldIndex = this.current;
+			this.current = 0;
+			let tabItem = this.tabBars[this.tabCurrentIndex].listArr[this.current];
+			if (this.tabCurrentIndex !== 0 && tabItem.loaded !== true) {
+				tabItem.list = [];
+				this.isRealTimeBrush('refresh', true);
+				tabItem.loaded = true;
+			} else {
+				if (tabItem.list.length == 0) {
+					this.isRealTimeBrush('refresh', true);
+				} else {
+					this.items[this.oldIndex].selectedWidth = 0;
+					this.items[this.current].selectedWidth = 166;
+				}
+			}
+			// 当前项居中显示的顶部选项卡
+			if (this.platform == 'ios') {
+				//为了兼容ios
+				if (elSize.left + elSize.width > 375) {
+					let idx = index - 3;
+					let newEl = this.$refs['tabBar' + index][0];
+					dom.scrollToElement(newEl, { offset: -300 });
+					return;
+				}
+				if (elSize.left + elSize.width < 350) {
+					if (index > 1) {
+						dom.scrollToElement(el, { offset: -300 });
+					} else {
+						let itemLeft = elSize.width * index + 26 * (index + 1);
+						dom.scrollToElement(el, { offset: -itemLeft });
+					}
+				}
+			} else {
+				dom.scrollToElement(el, { offset: -300 });
+			}
+		},
+		//切换分类icon
+		tabIconSwitch(index) {
+			if (this.tabCurrentIndex !== index) {
+				this.tabImg[this.tabCurrentIndex] = this.tabBars[this.tabCurrentIndex].unselectedIcon;
+				this.tabImg[index] = this.tabBars[index].selectedIcon;
+			}
+		},
+		//选项卡点击
+		clickTab(e, index) {
+			if (this.current !== index) {
+				this.items[this.current].selectedWidth = 0;
+				this.items[index].selectedWidth = 166;
+				this.current = index;
+				this.isRealTimeBrush('refresh');
+			}
+		},
+		//下拉完成
+		onPulldownReresh() {
+			this.loadList('refresh');
+		},
+		// 是否实时刷新
+		isRealTimeBrush(type, isSliding) {
+			const that = this;
+			switch (that.current) {
+				case 0:
+					that.requestList(type, isSliding);
+					clearInterval(that.biddingInterval);
+					that.biddingInterval = setInterval(() => {
+						that.requestList(type, isSliding);
+					}, 1000);
+					break;
+				case 1:
+					that.requestList(type, isSliding);
+					clearInterval(that.biddingInterval);
+					that.biddingInterval = setInterval(() => {
+						that.requestList();
+					}, 5000);
+					break;
+				case 2:
+					clearInterval(that.biddingInterval);
+					that.requestList(type, isSliding);
+					break;
+			}
+		},
+		//上拉加载(add)||下拉刷新 (refresh)
+		loadList(type) {
+			const that = this;
+			let tabItem = that.tabBars[that.tabCurrentIndex].listArr[that.current];
+			if (type == 'refresh') {
+				tabItem.refreshing = true;
+			} else if (type == 'add') {
+				if (tabItem.loadMoreStatus === 2) {
+					tabItem.loadMoreStatus = 1;
+					setTimeout(() => {
+						tabItem.loadMoreStatus = 2;
+					}, 100);
+					return;
+				}
+				tabItem.loadMoreStatus = 1;
+			}
+			setTimeout(function() {
+				that.requestList(type);
+			}, 500);
+		},
+		//获取商品 isSliding为true需计算选项卡当前选中样式
+		requestList(type, isSliding) {
+			const that = this;
+			let activityType = 0;
+			if (that.tabCurrentIndex == 1) {
+				activityType = 1;
+			} else {
+				activityType = 0;
+			};
+			let tabItem = that.tabBars[that.tabCurrentIndex].listArr[that.current];
+			if (type == 'refresh') tabItem.count = 1;
+			if (type == 'add') tabItem.count++;
+			let data = {
+				token: storage.getStorage('token', 2),
+				activityType: activityType,
+				start: tabItem.count,
+				len: that.len
+			};
+			
+			that.goodsUrl = that.items[that.current].url;
+			api.getBiddingList(data, that.goodsUrl)
+				.then(res => {
+					res = res.data;
+					if (res.code == '0001') {
+						if (that.current == 1) that.serverTime = res.data.serverTime;
+						res = res.data.activityList;
+						// console.log(JSON.stringify(res))
+						if (type == 'refresh') tabItem.list = [];
+						if (type) {
+							res.forEach(item => {
+								tabItem.list.push(item);
+							});
+						}else{
+							res.forEach((item, index) => {
+								let newIndex = tabItem.count * index;
+								// console.log(newIndex)
+								// tabItem.list.splice(newIndex, newIndex+1, item);
+							});
+						}
+						// console.log(JSON.stringify(that.tabBars))
+						//无数据展示
+						if (tabItem.list.length == 0) {
+							that.content.desc = that.items[that.current].noContentText;
+							that.content.isShow = true;
+						} else {
+							that.content.isShow = false;
+						}
+						if (isSliding) {
+							if (tabItem.list.length == 0) {
+								that.items[that.oldIndex].selectedWidth = 0;
+								that.items[1].selectedWidth = 166;
+								that.current = that.oldIndex = 1;
+								that.isRealTimeBrush('refresh');
+							} else {
+								that.items[that.oldIndex].selectedWidth = 0;
+								that.items[0].selectedWidth = 166;
+							}
+						}
+						if (type == 'add') {
+							tabItem.loadMoreStatus = tabItem.list.length > 40 ? 2 : 0;
+						} else if (type == 'refresh') {
+							clearInterval(refreshAnimation);
+							tabItem.refreshing = false;
+							tabItem.loadMoreStatus = 0;
+							tabItem.count = 1;
+						}
+					} else {
+						uni.showToast({
+							title: res.message,
+							duration: 3000
+						});
+					}
+				})
+				.catch(err => {
+					let title = that.items[that.current].title;
+					console.log(title + '=' + JSON.stringify(err));
+				});
+		},
+		getElSize(el) {
+			//得到元素的size
+			return new Promise((res, rej) => {
+				const result = dom.getComponentRect(el, option => {
+					res(option.size);
+				});
+			});
+		}
+	}
+};
+</script>
+
+<style lang="scss" scoped src="./auction.css"></style>

@@ -1,0 +1,700 @@
+{
+	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+		{
+			"path": "pages/index/index",
+			"style": {
+				"navigationBarBackgroundColor": "#ffb303",
+				"navigationBarTextStyle": "white",
+				"navigationBarTitleText": "小冠优选",
+				"enablePullDownRefresh": true,
+				"app-plus": {
+					"titleNView": {
+						"type": "transparent",
+						"backgroundColorTop": "#fff",
+						"navigationStyle": "custom",
+						"buttons": [{
+							"fontSrc": "/static/iconfont.ttf",
+							"text": "\ue635",
+							"fontSize": "24",
+							"float": "left",
+							"background": "rgba(0,0,0,0)"
+						}, {
+							"fontSrc": "/static/iconfont.ttf",
+							"text": "\ue608",
+							"fontSize": "24",
+							"background": "rgba(0,0,0,0)",
+							"redDot": true
+						}],
+						"pullToRefresh": {
+							"style": "circle",
+							"offset": "70px"
+						}
+					}
+				}
+
+			}
+		}, {
+			"path": "pages/buy-beans/buy-beans",
+			"style": {
+				"navigationBarBackgroundColor": "#FEAF33",
+				"navigationBarTextStyle": "white",
+				"navigationBarTitleText": "充值福豆",
+				"navigationStyle": "custom",
+				"app-plus": {
+					"bounce": "none",
+					"backgroundColorTop": "#fff",
+					"titleNView": {
+						"type": "transparent",
+						"bounce": "none",
+						"scrollIndicator": "none",
+						"buttons": [{
+							"text": "福豆明细",
+							"fontSize": "14",
+							"width": "80",
+							"background": "rgba(0,0,0,0)"
+						}, {
+							"text": "买豆记录",
+							"fontSize": "14",
+							"float": "left",
+							"width": "80",
+							"background": "rgba(0,0,0,0)"
+						}]
+					}
+				}
+			}
+		}, {
+			"path": "pages/auction/auction",
+			"style": {
+				"navigationBarBackgroundColor": "#fff",
+				"navigationBarTitleText": "竞拍",
+				"navigationStyle": "default",
+				"app-plus": {
+					"bounce": "none"
+				}
+			}
+		}, {
+			"path": "pages/assist/assist",
+			"style": {
+				"navigationBarTitleText": "帮助与反馈"
+			}
+		}, {
+			"path": "pages/mine/mine",
+			"style": {
+				"navigationBarBackgroundColor": "#ffb303",
+				"navigationBarTextStyle": "white",
+				"navigationBarTitleText": "我的",
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": true,
+				"app-plus": {
+					"bounce": "vertical",
+					"backgroundColorTop": "#fff",
+					"scrollIndicator": "none",
+					"titleNView": {
+						"type": "transparent",
+						"buttons": [{
+							"fontSrc": "/static/iconfont.ttf",
+							"text": "\ue650",
+							"fontSize": "18",
+							"background": "rgba(0,0,0,0)"
+						}],
+						"pullToRefresh": {
+							"style": "circle",
+							"offset": "70px"
+						}
+					}
+				}
+			}
+
+		}, {
+			"path": "pages/login/login",
+			"style": {
+				"navigationBarBackgroundColor": "#FFB709",
+				"navigationBarTextStyle": "white",
+				"navigationBarTitleText": "登录/注册",
+				"app-plus": {
+					"bounce": "none",
+					"titleNView": {
+						"type": "transparent"
+					},
+					"scrollIndicator": "none"
+				}
+			}
+		}, {
+			"path": "pages/unsafe-message-verify/unsafe-message-verify",
+			"style": {
+				"navigationBarBackgroundColor": "#FFB709",
+				"navigationBarTextStyle": "white",
+				"navigationBarTitleText": "短信验证",
+				"navigationStyle": "custom",
+				"app-plus": {
+					"bounce": "none",
+					"titleNView": false,
+					"scrollIndicator": "none"
+				}
+			}
+		}, {
+			"path": "pages/set-password/set-password",
+			"style": {
+				"navigationBarBackgroundColor": "#FFB709",
+				"navigationBarTextStyle": "white",
+				"navigationBarTitleText": "设置密码",
+				"navigationStyle": "custom",
+				"app-plus": {
+					"bounce": "none",
+					"titleNView": false,
+					"scrollIndicator": "none"
+				}
+			}
+		}, {
+			"path": "pages/voice-verify/voice-verify",
+			"style": {
+				"navigationBarBackgroundColor": "#FFB709",
+				"navigationBarTextStyle": "white",
+				"navigationBarTitleText": "语音验证",
+				"navigationStyle": "custom",
+				"app-plus": {
+					"bounce": "none",
+					"titleNView": false,
+					"scrollIndicator": "none"
+				}
+			}
+		}, {
+			"path": "pages/safe-message-verify/safe-message-verify",
+			"style": {
+				"navigationBarBackgroundColor": "#FFB709",
+				"navigationBarTextStyle": "white",
+				"navigationBarTitleText": "短信验证",
+				"navigationStyle": "custom",
+				"app-plus": {
+					"bounce": "none",
+					"titleNView": false,
+					"scrollIndicator": "none"
+				}
+			}
+		}, {
+			"path": "pages/modify-name/modify-name",
+			"style": {
+				"navigationBarBackgroundColor": "#FFB709",
+				"navigationBarTextStyle": "white",
+				"navigationBarTitleText": "修改昵称",
+				"navigationStyle": "custom",
+				"app-plus": {
+					"bounce": "none",
+					"titleNView": false,
+					"scrollIndicator": "none"
+				}
+			}
+		}, {
+			"path": "pages/password-login/password-login",
+			"style": {
+				"navigationBarBackgroundColor": "#FFB709",
+				"navigationBarTextStyle": "white",
+				"navigationBarTitleText": "密码登录",
+				"navigationStyle": "custom",
+				"app-plus": {
+					"bounce": "none",
+					"titleNView": false,
+					"scrollIndicator": "none"
+				}
+			}
+		}, {
+			"path": "pages/retireve-password/retireve-password",
+			"style": {
+				"navigationBarBackgroundColor": "#FFB709",
+				"navigationBarTextStyle": "white",
+				"navigationBarTitleText": "找回密码",
+				"navigationStyle": "custom",
+				"app-plus": {
+					"bounce": "none",
+					"titleNView": false,
+					"scrollIndicator": "none"
+				}
+			}
+		}, {
+			"path": "pages/welfare-agency/welfare-agency",
+			"style": {
+				"navigationBarBackgroundColor": "#6179F5",
+				"navigationBarTextStyle": "white",
+				"navigationBarTitleText": "福利社",
+				"app-plus": {
+					"bounce": "none",
+					"scrollIndicator": "none",
+					"titleNView": {
+						"buttons": [{
+							"text": "福利说明",
+							"fontSize": "14",
+							"width": "100",
+							"background": "rgba(0,0,0,0)"
+						}]
+					}
+				}
+			}
+		}, {
+			"path": "pages/sign-in/sign-in",
+			"style": {
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationBarTextStyle": "black",
+				"navigationBarTitleText": "每日签到",
+				"app-plus": {
+					"titleNView": {
+						"type": "transparent"
+					}
+				}
+			}
+		}, {
+			"path": "pages/welfare-explain/welfare-explain",
+			"style": {
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationBarTextStyle": "black",
+				"navigationBarTitleText": "福利说明"
+			}
+		}, {
+			"path": "pages/beans-rule/beans-rule",
+			"style": {
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationBarTextStyle": "black",
+				"navigationBarTitleText": "福豆规则"
+			}
+		}, {
+			"path": "pages/sign-rule/sign-rule",
+			"style": {
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationBarTextStyle": "black",
+				"navigationBarTitleText": "签到规则"
+			}
+		}, {
+			"path": "pages/about-us/about-us",
+			"style": {
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationBarTextStyle": "black",
+				"navigationBarTitleText": "关于我们"
+			}
+		}, {
+			"path": "pages/my-backpack/my-backpack",
+			"style": {
+				"navigationBarBackgroundColor": "#66A7F6",
+				"navigationBarTextStyle": "white",
+				"navigationBarTitleText": "我的背包",
+				"app-plus": {
+					"bounce": "none",
+					"scrollIndicator": "none",
+					"titleNView": {
+						"type": "transparent",
+						"buttons": [{
+							"text": "历史记录",
+							"fontSize": "14",
+							"width": "100",
+							"background": "rgba(0,0,0,0)"
+						}]
+					}
+				}
+			}
+		}, {
+			"path": "pages/backpack-history/backpack-history",
+			"style": {
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationBarTextStyle": "black",
+				"navigationBarTitleText": "背包历史记录"
+			}
+		}, {
+			"path": "pages/confirm-order/confirm-order",
+			"style": {
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationBarTextStyle": "black",
+				"navigationBarTitleText": "确认订单"
+			}
+		}, {
+			"path": "pages/evaluate-list/evaluate-list",
+			"style": {
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationBarTextStyle": "black",
+				"navigationBarTitleText": "评价列表"
+			}
+		}, {
+			"path": "pages/honor-achievement/honor-achievement",
+			"style": {
+				"navigationBarBackgroundColor": "#2C2C8D",
+				"navigationBarTextStyle": "white",
+				"navigationBarTitleText": "荣誉成就",
+				"navigationStyle": "custom",
+				"app-plus": {
+					"bounce": "none",
+					"scrollIndicator": "none",
+					"titleNView": {
+						"buttons": [{
+							"text": "经验值记录",
+							"fontSize": "14",
+							"width": "100",
+							"background": "rgba(0,0,0,0)"
+						}]
+					}
+				}
+			}
+		}, {
+			"path": "pages/exp-history/exp-history",
+			"style": {
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationBarTextStyle": "black",
+				"navigationBarTitleText": "经验值记录"
+			}
+
+		}, {
+			"path": "pages/shipping-address/shipping-address",
+			"style": {
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationBarTextStyle": "black",
+				"navigationBarTitleText": "收货地址"
+
+			}
+		}, {
+			"path": "pages/edit-address/edit-address",
+			"style": {
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationBarTextStyle": "black",
+				"navigationBarTitleText": "编辑地址"
+
+			}
+		}, {
+			"path": "pages/silver-beandetail/silver-beandetail",
+			"style": {
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationBarTextStyle": "black",
+				"navigationBarTitleText": "银豆有效期"
+			}
+		}, {
+			"path": "pages/my-bidding/my-bidding",
+			"style": {
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationBarTextStyle": "black",
+				"navigationBarTitleText": "我的竞拍",
+				"app-plus": {
+					"bounce": "none"
+				}
+			}
+		}, {
+			"path": "pages/real-name/real-name",
+			"style": {
+				"navigationBarBackgroundColor": "#FFB709",
+				"navigationBarTextStyle": "white",
+				"navigationBarTitleText": "实名认证",
+				"navigationStyle": "custom",
+				"app-plus": {
+					"bounce": "none",
+					"titleNView": false,
+					"scrollIndicator": "none"
+				}
+			}
+		}, {
+			"path": "pages/identification/identification",
+			"style": {
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationBarTextStyle": "black",
+				"navigationBarTitleText": "实名认证",
+				"navigationStyle": "custom",
+				"app-plus": {
+					"bounce": "none",
+					"titleNView": false,
+					"scrollIndicator": "none"
+				}
+			}
+		}, {
+			"path": "pages/lucky-draw/lucky-draw",
+			"style": {
+				"navigationBarBackgroundColor": "#ffb303",
+				"navigationBarTextStyle": "white",
+				"navigationBarTitleText": "幸运抽奖",
+				"app-plus": {
+					"titleNView": {
+						"buttons": [{
+							"type": "share"
+						}]
+					}
+				}
+			}
+		}, {
+			"path": "pages/setting/setting",
+			"style": {
+				"navigationBarTitleText": "设置"
+			}
+		}, {
+			"path": "pages/cash-desk/cash-desk",
+			"style": {
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationBarTextStyle": "black",
+				"navigationBarTitleText": "收银台"
+			}
+		}, {
+			"path": "pages/beans-detail/beans-detail",
+			"style": {
+				"navigationBarTitleText": "交易明细"
+			}
+		}, {
+			"path": "pages/order-details/order-details",
+			"style": {
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationBarTextStyle": "black",
+				"navigationBarTitleText": "订单详情"
+			}
+		}, {
+			"path": "pages/auction-detailsed/auction-detailsed",
+			"style": {
+				"navigationBarTextStyle": "black",
+				"app-plus": {
+					"titleNView": {
+						"titleText": "",
+						"type": "transparent"
+					}
+				}
+			}
+		}, {
+			"path": "pages/confirm-goods/confirm-goods",
+			"style": {
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationBarTextStyle": "black",
+				"navigationBarTitleText": "确认收货"
+			}
+		}, {
+			"path": "pages/publish-success/publish-success",
+			"style": {
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationBarTextStyle": "black",
+				"navigationBarTitleText": "发布成功"
+			}
+		}, {
+			"path": "pages/evaluation-list/evaluation-list",
+			"style": {
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationBarTextStyle": "black",
+				"navigationBarTitleText": "晒单评价"
+			}
+		}, {
+			"path": "pages/message-center/message-center",
+			"style": {
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationBarTextStyle": "black",
+				"navigationBarTitleText": "消息中心"
+			}
+		}, {
+			"path": "pages/site-inform/site-inform",
+			"style": {
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationBarTextStyle": "black",
+				"navigationBarTitleText": "站内通知",
+				"enablePullDownRefresh": true
+			}
+		}, {
+			"path": "pages/site-inform-details/site-inform-details",
+			"style": {
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationBarTextStyle": "black",
+				"navigationBarTitleText": "站内通知"
+			}
+		}, {
+			"path": "pages/edit-information/edit-information",
+			"style": {
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationBarTextStyle": "black",
+				"navigationBarTitleText": "编辑资料"
+			}
+		}, {
+			"path": "pages/wuliu-info/wuliu-info",
+			"style": {
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationBarTextStyle": "black",
+				"navigationBarTitleText": "物流信息"
+			}
+		}, {
+			"path": "pages/my-invitation/my-invitation",
+			"style": {
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationBarTextStyle": "black",
+				"navigationBarTitleText": "我的邀请"
+			}
+		}, {
+			"path": "pages/invite-friends/invite-friends",
+			"style": {
+				"navigationBarBackgroundColor": "#4a24a0",
+				"navigationBarTextStyle": "white",
+				"navigationBarTitleText": "邀请好友",
+				"navigationStyle": "custom",
+				"app-plus": {
+					"bounce": "none",
+					"backgroundColorTop": "#fff",
+					"titleNView": {
+						"type": "transparent",
+						"bounce": "none",
+						"scrollIndicator": "none",
+						"buttons": [{
+							"text": "邀请记录",
+							"fontSize": "14",
+							"width": "80",
+							"background": "rgba(0,0,0,0)"
+						}]
+					}
+				}
+			}
+		}, {
+			"path": "pages/headline-news/headline-news",
+			"style": {
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationBarTextStyle": "black",
+				"navigationBarTitleText": "冠君头条",
+				"app-plus": {
+					"scrollIndicator": "none",
+					"titleNView": {
+						"buttons": [{
+							"type": "share",
+							"background": "rgba(0,0,0,0)"
+						}]
+					}
+				}
+			}
+		}, {
+			"path": "pages/invite-history/invite-history",
+			"style": {
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationBarTextStyle": "black",
+				"navigationBarTitleText": "邀请记录",
+				"enablePullDownRefresh": true
+			}
+		}, {
+			"path": "pages/buy-beans-history/buy-beans-history",
+			"style": {
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationBarTextStyle": "black",
+				"navigationBarTitleText": "买豆记录",
+				"enablePullDownRefresh": true
+			}
+		}, {
+			"path": "pages/auction-detailsing/auction-detailsing",
+			"style": {
+				"navigationBarTextStyle": "black",
+				"app-plus": {
+					"titleNView": {
+						"titleText": "",
+						"type": "transparent",
+						"buttons": [
+							{
+								"float": "right",
+								"fontSrc": "_www/static/iconfont.ttf",
+								"fontSize": "18px",
+								"text": "\ue61b",
+								"color": "#ee7132"
+							}
+						]
+					}
+				}
+			}
+		},
+		{
+			"path": "pages/auction-details/auction-details",
+			"style": {
+				"navigationBarTextStyle": "black",
+				"app-plus": {
+					"titleNView": {
+						"titleText": "",
+						"type": "transparent",
+						"buttons": [
+							{
+								"float": "right",
+								"fontSrc": "_www/static/iconfont.ttf",
+								"fontSize": "18px",
+								"text": "\ue61b",
+								"color": "#ee7132"
+							}
+						]
+					}
+				}
+			}
+		}, {
+			"path": "pages/my-order/my-order",
+			"style": {
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationBarTextStyle": "black",
+				"navigationBarTitleText": "我的订单",
+				"app-plus": {
+					"bounce": "none"
+				}
+			}
+		}, {
+			"path": "pages/verify-unsafe/verify-unsafe",
+			"style": {
+				"app-plus": {
+					"titleNView": false
+				}
+			}
+		},
+		{
+			"path": "pages/real-name-zfb/real-name-zfb",
+			"style": {}
+		},
+		{
+			"path": "pages/virtual-field/virtual-field",
+			"style": {
+				"navigationBarTextStyle": "white",
+				"app-plus": {
+					"titleNView": false,
+					"bounce": "none"
+				}
+			}
+		}
+	    ,{
+            "path" : "pages/guide-page/guide-page",
+            "style" : {}
+        }, {
+			"path": "pages/banner-external-link/banner-external-link",
+			"style": {}
+		}
+    ],
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "小冠优选",
+		"navigationBarBackgroundColor": "#F8F8F8",
+		"backgroundColor": "#F8F8F8"
+	},
+	"tabBar": {
+		"color": "#62697C",
+		"selectedColor": "#FF9C00",
+		"borderStyle": "black",
+		"backgroundColor": "#ffffff",
+		"list": [{
+				"pagePath": "pages/index/index",
+				"iconPath": "static/tabBar/index.png",
+				"selectedIconPath": "static/tabBar/index_active.png",
+				"text": "首页"
+			},
+			{
+				"pagePath": "pages/buy-beans/buy-beans",
+				"iconPath": "static/tabBar/buy_beans.png",
+				"selectedIconPath": "static/tabBar/buy_beans_active.png",
+				"text": "买豆"
+			},
+			{
+				"pagePath": "pages/auction/auction",
+				"iconPath": "static/tabBar/auction.png",
+				"selectedIconPath": "static/tabBar/auction_active.png",
+				"text": "竞拍"
+			},
+			{
+				"pagePath": "pages/assist/assist",
+				"iconPath": "static/tabBar/assist.png",
+				"selectedIconPath": "static/tabBar/assist_active.png",
+				"text": "帮助"
+			},
+			{
+				"pagePath": "pages/mine/mine",
+				"iconPath": "static/tabBar/mine.png",
+				"selectedIconPath": "static/tabBar/mine_active.png",
+				"text": "我的"
+			}
+		],
+		"condition": { //模式配置，仅开发期间生效
+			"current": 29,
+			"list": [{
+				"name": "swiper", //模式名称
+				"path": "pages/auction-detailsed/auction-detailsed", //启动页面，必选
+				"query": "interval=4000&autoplay=false" //启动参数，在页面的onLoad函数里面得到。
+			}]
+		}
+	}
+}

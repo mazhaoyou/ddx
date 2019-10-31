@@ -1,0 +1,130 @@
+<template>
+	<div class="uni-countdown">
+		<text :style="{ color:color }" v-if="showHour" class="uni-countdown-numbers">{{h}}</text>
+		<text :style="{ color:color }" v-if="showHour" class="uni-countdown-splitor">:</text>
+		<text :style="{ color:color }" v-if="showMinute" class="uni-countdown-numbers">{{i}}</text>
+		<text :style="{ color:color }" v-if="showMinute" class="uni-countdown-splitor">:</text>
+		<text :style="{ color:color }" class="uni-countdown-numbers">{{s}}</text>
+	</div>
+</template>
+<script>
+	export default {
+		name: 'UniCountdown',
+		props: {
+			showHour: {
+				type: Boolean,
+				default: true
+			},
+			showMinute: {
+				type: Boolean,
+				default: true
+			},
+			color: {
+				type: String,
+				default: '#fff'
+			},
+			day: {
+				type: Number,
+				default: 0
+			},
+			hour: {
+				type: Number,
+				default: 0
+			},
+			minute: {
+				type: Number,
+				default: 0
+			},
+			second: {
+				type: Number,
+				default: 0
+			}
+		},
+		data() {
+			return {
+				timer: null,
+				d: '00',
+				h: '00',
+				i: '00',
+				s: '00',
+				seconds: 0
+			}
+		},
+		created: function(e) {
+			this.seconds = this.toSeconds(this.day, this.hour, this.minute, this.second)
+			this.countDown()
+			this.timer = setInterval(() => {
+				this.seconds--
+				if (this.seconds < 0) {
+					this.timeUp()
+					return
+				}
+				this.countDown()
+			}, 1000)
+		},
+		beforeDestroy() {
+			clearInterval(this.timer)
+		},
+		methods: {
+			toSeconds(day, hours, minutes, seconds) {
+				return (day * 60 * 60 * 24) + (hours * 60 * 60) + (minutes * 60) + seconds
+			},
+			timeUp() {
+				clearInterval(this.timer)
+				this.$emit('timeup')
+			},
+			countDown() {
+				let seconds = this.seconds
+				let [day, hour, minute, second] = [0, 0, 0, 0]
+				if (seconds > 0) {
+					day = Math.floor(seconds / (60 * 60 * 24))
+					hour = Math.floor(seconds / (60 * 60)) - (day * 24)
+					minute = Math.floor(seconds / 60) - (day * 24 * 60) - (hour * 60)
+					second = Math.floor(seconds) - (day * 24 * 60 * 60) - (hour * 60 * 60) - (minute * 60)
+				} else {
+					this.timeUp()
+				}
+				if (day < 10) {
+					day = '0' + day
+				}
+				if (hour < 10) {
+					hour = '0' + hour
+				}
+				if (minute < 10) {
+					minute = '0' + minute
+				}
+				if (second < 10) {
+					second = '0' + second
+				}
+				this.d = day
+				this.h = hour
+				this.i = minute
+				this.s = second
+			}
+		}
+	}
+</script>
+<style>
+	
+	.uni-countdown,
+	.uni-countdown-splitor,
+	.uni-countdown-numbers{
+		align-items: center;
+		text-align: center;
+	}
+	
+	.uni-countdown {
+		flex-direction: row;
+		flex-wrap: nowrap;
+		/* width: 125px; */
+	}
+	
+	.uni-countdown-splitor{
+		/* width: 10px; */
+	}
+	
+	.uni-countdown-numbers {
+		/* width: 45px; */
+		font-size: 32px;
+	}
+</style>

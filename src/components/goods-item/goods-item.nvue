@@ -1,0 +1,235 @@
+<!--	
+	竞拍-商品组件
+	薛毅飞 
+-->
+<template>
+	<div class="goods" @click="enterDetails">
+		<div class="goods-item">
+			<div class="goods-item-img">
+				<image class="goods-image" :src="listItem.goodsThumbnail"></image>
+				<div class="goods-img-box">
+					<image class="activity-clinch-del" src="../../static/auction/activity_clinch_del.png" v-if="current == 2"></image>
+					<image class="goods-activity-name" src="../../static/auction/goods_activity.png"></image>
+					<text class="goods-remaining" v-if="listItem.entrustBeans">委托剩余{{ listItem.entrustBeans }}福豆</text>
+					<text class="goods-consumption" v-if="listItem.commissionBean">已消耗{{ listItem.commissionBean }}福豆</text>
+					<text class="goods-consumption" v-if="listItem.beanNum">已委托{{ listItem.beanNum }}福豆</text>
+					<div class="suspended-price suspended-price-start" v-if="current == 1">
+						<text class="suspended-price-num suspended-start-num">{{ listItem.forbiddenPrice }}</text>
+						<div class="suspended-price-icon suspended-start-icon"><image class="suspended-lock" src="../../static/auction/lock.png"></image></div>
+					</div>
+					<div class="suspended-price suspended-price-not" v-if="listItem.warningState == 1">
+						<text class="suspended-price-num suspended-not-num">{{ listItem.forbiddenPrice }}</text>
+						<div class="suspended-price-icon suspended-not-icon"><image class="suspended-unlock" src="../../static/auction/unlock.png"></image></div>
+					</div>
+					<div class="suspended-price suspended-price-will" v-else-if="listItem.warningState == 2">
+						<text class="suspended-price-num suspended-will-num">{{ listItem.forbiddenPrice }}</text>
+						<div class="suspended-price-icon suspended-will-icon"><image class="suspended-unlock" src="../../static/auction/unlock.png"></image></div>
+					</div>
+					<div class="suspended-price suspended-price-has" v-else-if="listItem.warningState == 3">
+						<text class="suspended-price-num suspended-has-num">{{ listItem.forbiddenPrice }}</text>
+						<div class="suspended-price-icon suspended-has-icon"><image class="suspended-lock" src="../../static/auction/lock.png"></image></div>
+					</div>
+				</div>
+			</div>
+			<div class="goods-item-info">
+				<div class="goods-item-title">
+					<text class="goods-title-text" :style="{ lines: lines }">{{ listItem.goodsName }}</text>
+					<div class="collection-box" @click="setFocus"><image class="collection" v-if="listItem.whetherAttention" :src="isCollection"></image></div>
+				</div>
+				<!-- 正在热拍-start -->
+				<div class="goods-item-countdown" v-if="current == 0">
+					<text class="goods-countdown-desc">出价倒计时</text>
+					<div class="goods-countdown-num">
+						<!-- <uni-countdown color="#FA503D" :showHour="false" :showMinute="false" :second="listItem.countDown" /> -->
+						<text class="goods-countdown-text">{{ listItem.countDownLeftTime }}</text>
+					</div>
+					<text class="goods-countdown-seconds">秒</text>
+				</div>
+				<div class="goods-item-price" v-if="current == 0">
+					<div class="goods-price-desc">
+						<text class="goods-current-name">当前价:</text>
+						<text class="goods-current-price">{{ listItem.currentPrice }}</text>
+						<text class="goods-market-price">{{ listItem.marketPrice }}</text>
+					</div>
+					<text class="goods-pat-btn">马上拍</text>
+				</div>
+				<!-- 正在热拍-end -->
+				<!-- 即将开始-start -->
+				<div class="goods-item-opening" v-if="current == 1">
+					<div class="goods-opening-box">
+						<text class="goods-opening-desc">距离开场</text>
+						<div :class="['opening-countdown', isOneHour ? 'opening-countdown-active' : '']">
+							<image v-if="isOneHour" class="opening-countdown-icon" src="../../static/auction/timing.png"></image>
+							<image v-else class="opening-countdown-icon" src="../../static/auction/timing_active.png"></image>
+							<uni-countdown v-if="isOneHour" :minute="i" :second="s" />
+							<text v-else :class="['opening-countdown-time', isOneHour ? 'countdown-time-acitve' : '']">{{ countdown }}</text>
+						</div>
+					</div>
+					<text class="goods-opening-time">{{ startTime }}</text>
+				</div>
+				<div class="goods-purchase-price" v-if="current == 1">
+					<text class="goods-item-purchase">直购价：￥{{ listItem.marketPrice }}</text>
+				</div>
+				<!-- 即将开始-end -->
+				<!-- 往期成交-start -->
+				<div class="goods-item-clinch" v-if="current == 2">
+					<text class="goods-clinch-peo">成交人：{{ listItem.nickname }}</text>
+					<div class="goods-clinch-desc">
+						<text class="goods-clinch-title">成交价：</text>
+						<text class="goods-clinch-price">{{ listItem.dealPrice }}</text>
+					</div>
+				</div>
+				<div class="goods-item-clinch-time" v-if="current == 2">
+					<text class="clinch-time-desc">成交时间:{{ clinchDealTime }}</text>
+					<text class="clinch-time-price">{{ listItem.marketPrice }}</text>
+				</div>
+				<!-- 往期成交-end -->
+			</div>
+		</div>
+	</div>
+</template>
+
+<script>
+import uniCountdown from '@/components/uni-countdown/uni-countdown.nvue';
+import { time } from '@/common/time.js';
+import api from '@/common/http/index.js';
+import { formatDate } from '@/common/filters.js';
+export default {
+	components: {
+		uniCountdown
+	},
+	props: {
+		listItem: {
+			type: Object,
+			default: {}
+		},
+		current: {
+			type: Number,
+			default: 0
+		},
+		serverTime: {
+			type: String,
+			default: ''
+		}
+	},
+	data() {
+		return {
+			dataTime: this.listItem.activityStartTime, //记录开始时间
+			startTime: null, //计算后的开始时间,
+			isOneHour: false,
+			offerCd: '00', //出价倒计时
+			h: '00', //小时
+			i: '00', //分钟
+			s: '00', //秒
+			countdown: '00:00:00', //距离开场时间
+			focus: this.listItem.whetherAttention, //记录关注状态
+			timestamp: '' //记录点击事件时间戳
+		};
+	},
+	created() {
+		if (this.dataTime) {
+			let calculateTime = time.getDaysNum(this.serverTime, this.dataTime);
+			let startDate = new Date(Number(this.dataTime));
+			let month = startDate.getMonth()+1;
+			let days = startDate.getDate();
+			let hours = startDate.getHours() < 10 ? '0' + startDate.getHours() : startDate.getHours();
+			let minutes = startDate.getMinutes() < 10 ? '0' + startDate.getMinutes() : startDate.getMinutes();
+			let seconds = startDate.getSeconds() < 10 ? '0' + startDate.getSeconds() : startDate.getSeconds();
+			//判断显示日期
+			switch (calculateTime.days) {
+				case 0:
+					this.startTime = '今天';
+					break;
+				case 1:
+					this.startTime = '明天';
+					break;
+				default:
+					this.startTime = month + '月' + days + '日';
+					break;
+			}
+			//倒计时时间
+			if (calculateTime.days == 0 && calculateTime.hours < 1) {
+				this.isOneHour = true;
+				this.i = Number(calculateTime.minutes);
+				this.s = Number(calculateTime.seconds);
+			} else {
+				this.countdown = hours + ':' + minutes + ':' + seconds;
+			}
+		}
+	},
+	computed: {
+		lines() { //计算标题显示行数
+			return 1;
+		},
+		isCollection() {
+			//收藏计算
+			return this.focus == 0 ? '../../static/auction/not_collection.png' : '../../static/auction/collection.png';
+		},
+		clinchDealTime() { //计算成交时间
+			return formatDate( this.listItem.createTime, 0);
+		}
+	},
+	methods: {
+		enterDetails(e) {
+			//进入详情
+			/* 防止多次执行 */
+			let poorMs = time.getPoorMs(this.timestamp, e.timestamp);
+			if (poorMs <= 1000) return false;
+			this.timestamp = e.timestamp;
+
+			let detailsUrl;
+			switch (this.current) {
+				case 0:
+					detailsUrl = '/pages/auction-detailsing/auction-detailsing';
+					break;
+				case 1:
+					detailsUrl = '/pages/auction-details/auction-details';
+					break;
+				case 2:
+					detailsUrl = '/pages/auction-detailsed/auction-detailsed';
+					break;
+			};
+			uni.navigateTo({
+				url: detailsUrl + '?activityId=' + this.listItem.activityId + '?snapshotId=' + this.listItem.snapshotId,
+				animationType: 'fade-in',
+				animationDuration: 300
+			});
+		},
+		// 设置关注状态
+		setFocus() {
+			let that = this;
+			let data = {
+				activityId: this.listItem.activityId
+			};
+			api.setFocusState(data)
+				.then(res => {
+					res = res.data;
+					if (res.code == '0001') {
+						let focus;
+						if (that.focus == 0) {
+							that.focus = 1;
+							focus = '关注成功';
+						} else {
+							that.focus = 0;
+							focus = '已取消关注';
+						}
+						uni.showToast({
+							title: focus,
+							duration: 3000
+						});
+					} else {
+						uni.showToast({
+							title: res.message,
+							duration: 5000
+						});
+					}
+				})
+				.catch(err => {
+					console.log('设置关注状态=' + JSON.stringify(err));
+				});
+		}
+	}
+};
+</script>
+
+<style lang="scss" src="./goods-item.css"></style>

@@ -1,0 +1,316 @@
+<!--	
+	我的订单
+	薛毅飞 
+-->
+<template>
+	<div class="my-bidding">
+		<no-content :isShow="content.isShow" :text="content.text" :desc="content.desc"></no-content>
+		<div class="tabBars">
+			<div class="tabBars-item" v-for="(item, index) in tabBars" :key="item.id" @click="tabBarsTap(index)">
+				<text :class="['tabBars-item-text', current == index ? 'tabBars-text-active' : '']">{{ item.text }}</text>
+				<div class="tabBars-item-selected" :style="{ width: item.selectedWidth + 'px' }"></div>
+			</div>
+		</div>
+		<slider class="slider" @change="sliderChange" @scroll="scrollHandler" :index="current" infinite="false">
+			<div class="slider-content" v-for="(item, index) in tabBars" :key="item.id">
+				<!-- <good-skeleton v-if="item.skeleton == 'ing'"></good-skeleton> -->
+				<list class="list">
+					<refresh class="loading" @refresh="onPulldownReresh" :display="item.refreshing ? 'show' : 'hide'">
+						<loading-indicator class="loading-icon" v-if="item.refreshing"></loading-indicator>
+						<text class="loading-text">{{ item.refreshing ? '刷新中...' : '下拉刷新' }}</text>
+					</refresh>
+					<cell class="cell" v-for="(goods, gIndex) in tabBars[index].goodsItem" :key="goods.activity_id">
+						<my-goods-item :listItem="goods" :module="2" :index="gIndex" :current="current" :serverTime="serverTime"></my-goods-item>
+					</cell>
+					<loading class="loading" @loading="loadList('add')" :display="item.loadMoreStatus == 1 ? 'show' : 'hide'">
+						<text class="loading-text">{{ item.loadMoreStatus == 0 ? '上拉显示更多' : item.loadMoreStatus == 1 ? '正在加载..' : '没有更多数据了' }}</text>
+						<loading-indicator class="loading-icon" v-if="item.loadMoreStatus == 1"></loading-indicator>
+					</loading>
+				</list>
+			</div>
+		</slider>
+	</div>
+</template>
+
+<script>
+import noContent from '@/components/no-content/no-content.vue';
+// import goodSkeleton from '@/components/goods-skeleton/goods-skeleton.vue';
+import myGoodsItem from '@/components/goods-item/my-goods-item.nvue';
+import api from '@/common/http/index.js';
+import storage from '@/common/storage/storage.js';
+const globalEvent = weex.requireModule('globalEvent');
+let windowWidth = uni.upx2px(750),
+	refreshAnimation;
+export default {
+	components: {
+		noContent,
+		// goodSkeleton,
+		myGoodsItem
+	},
+	data() {
+		return {
+			// isLoading: true,
+			len: 10, //每页条数
+			tabBarsLeft: 0,
+			current: 0,
+			serverTime: '', //服务器时间
+			content: {
+				isShow: false,
+				text: '',
+				desc: ''
+			},
+			tabBars: [
+				{
+					text: '待付款',
+					id: 'payment',
+					selectedWidth: 0,
+					noContentText: '您没有待付款订单',
+					// skeleton: 'ing', //骨架定义
+					goodsItem: [],
+					refreshing: 0,
+					loadMoreStatus: 0,
+					count: 1
+				},
+				{
+					text: '待发货',
+					id: 'delivery',
+					selectedWidth: 0,
+					noContentText: '您没有待发货订单',
+					// skeleton: 'ing', //骨架定义
+					goodsItem: [],
+					refreshing: 0,
+					loadMoreStatus: 0,
+					count: 1
+				},
+				{
+					text: '待收货',
+					id: 'harvest',
+					selectedWidth: 0,
+					noContentText: '您没有待收货订单',
+					// skeleton: 'ing', //骨架定义
+					goodsItem: [],
+					refreshing: 0,
+					loadMoreStatus: 0,
+					count: 1
+				},
+				{
+					text: '待评价',
+					id: 'evaluation',
+					selectedWidth: 0,
+					noContentText: '您没有待评价订单',
+					// skeleton: 'ing', //骨架定义
+					goodsItem: [],
+					refreshing: 0,
+					loadMoreStatus: 0,
+					count: 1
+				},
+				{
+					text: '全部订单',
+					id: 'allOrder',
+					selectedWidth: 0,
+					noContentText: '您没有任何订单',
+					// skeleton: 'ing', //骨架定义
+					goodsItem: [],
+					refreshing: 0,
+					loadMoreStatus: 0,
+					count: 1
+				}
+			],
+			goods: []
+		};
+	},
+	created() {
+		const that = this;
+		uni.getStorage({
+			key: 'orderIndex',
+			success: res => {
+				that.current = res.data;
+			},
+			complete: () => {
+				that.tabBars[that.current].selectedWidth = 66;
+				that.requestList('refresh');
+			}
+		});
+		// #ifdef APP-PLUS
+		windowWidth = WXEnvironment.deviceWidth / WXEnvironment.scale;
+		// #endif
+	},
+	methods: {
+		// 点击导航
+		tabBarsTap(index) {
+			const that = this;
+			if (that.current !== index) {
+				that.tabBars[that.current].selectedWidth = 0;
+				that.tabBars[index].selectedWidth = 66;
+				that.current = index;
+				that.requestList('refresh');
+			}
+		},
+		// 监听滑动
+		sliderChange(e) {
+			this.tabBarsTap(e.index);
+		},
+		// 滑动时
+		scrollHandler(e) {
+			if (e.offsetXRatio !== 0) this.content.isShow = false;
+		},
+		//下拉完成
+		onPulldownReresh() {
+			this.loadList('refresh');
+		},
+		//上拉加载(add)||下拉刷新 (refresh)
+		loadList(type) {
+			const that = this;
+			let tabItem = that.tabBars[that.current];
+			// console.log(JSON.stringify(tabItem))
+			if (type == 'refresh') {
+				tabItem.refreshing = true;
+			} else if (type == 'add') {
+				if (tabItem.loadMoreStatus === 2) {
+					tabItem.loadMoreStatus = 1;
+					setTimeout(() => {
+						tabItem.loadMoreStatus = 2;
+					}, 100);
+					return;
+				}
+				tabItem.loadMoreStatus = 1;
+			}
+
+			setTimeout(function() {
+				that.requestList(type);
+			}, 1000);
+		},
+		//获取商品
+		async requestList(type) {
+			let that = this;
+			// that.isLoading = true;
+			let tabItem = that.tabBars[that.current];
+			if (type == 'refresh') tabItem.count = 1;
+			if (type == 'add') tabItem.count++;
+			let data = {
+				orderType: that.current,
+				token: storage.isAuthed(),
+				start: tabItem.count,
+				len: 10
+			};
+			// console.log(JSON.stringify(data))
+			api.getOrderList(data)
+				.then(res => {
+					res = res.data;
+					if (res.code == '0001') {
+						if (that.current == 0) that.serverTime = res.data.serverTime;
+						res = res.data.order[that.current].orderList;
+						if (type == 'refresh') tabItem.goodsItem = [];
+						if (type == 'add') tabItem.loadMoreStatus = res.length == 0 ? 2 : 0;
+						res.forEach(item => {
+							tabItem.goodsItem.push(item);
+						});
+						/* setTimeout(function(){
+								tabItem.skeleton = 'end';
+							},200); */
+						//无数据展示
+						if (tabItem.goodsItem.length == 0) {
+							that.content.desc = tabItem.noContentText;
+							that.content.isShow = true;
+						} else {
+							that.content.isShow = false;
+						}
+						if (type == 'refresh') {
+							clearInterval(refreshAnimation);
+							tabItem.refreshing = false;
+							tabItem.loadMoreStatus = 0;
+							tabItem.count = 1;
+						};
+					} else {
+						uni.showToast({
+							title: res.message,
+							duration: 5000
+						});
+					}
+				})
+				.catch(err => {
+					console.log(JSON.stringify(err));
+				});
+		}
+	}
+};
+</script>
+
+<style lang="scss" scoped>
+/* 导航栏-start */
+.my-bidding {
+	flex: 1;
+}
+.tabBars {
+	width: 750px;
+	height: 84px;
+	background-color: #f2f2f2;
+	flex-direction: row;
+	padding: 0 10px;
+}
+.tabBars-item {
+	flex: 1;
+	position: relative;
+}
+.tabBars-item-text {
+	font-size: 28px;
+	line-height: 76px;
+	color: #333333;
+	text-align: center;
+}
+.tabBars-text-active {
+	color: #ff911b;
+}
+.tabBars-item-selected {
+	width: 66px;
+	height: 8px;
+	background-color: #ff911b;
+	border-radius: 4px;
+	position: absolute;
+	bottom: 0;
+	left: 40px;
+}
+/* 导航栏-end */
+/* 内容-start */
+.slider {
+	flex: 1;
+	background-color: #f0f0f0;
+	flex-direction: row;
+}
+.slider-content {
+	flex: 1;
+	width: 750px;
+}
+.list {
+	width: 750px;
+	flex: 1;
+}
+.cell {
+	width: 750px;
+	margin-bottom: 1px;
+}
+.refresh {
+	flex-direction: row;
+	justify-content: center;
+}
+.loading {
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
+	width: 750px;
+	height: 80px;
+	padding: 20px 0 10px;
+}
+.loading-text {
+	font-size: 28px;
+	color: #888;
+}
+.loading-icon {
+	height: 40px;
+	width: 40px;
+	color: #999999;
+	margin-right: 10px;
+}
+
+/* 内容-end */
+</style>

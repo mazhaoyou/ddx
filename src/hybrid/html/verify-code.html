@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+		<meta http-equiv="X-UA-Compatible" content="ie=edge">
+		<meta name="format-detection" content="telephone=no" />
+		<title>注册验证</title>
+		<link rel="stylesheet" type="text/css" href="css/verify-code.css" />
+	</head>
+	<body>
+		<div id="app" class="verify-container">
+			<!-- 头部开始 -->
+			<div class="verify-header">
+				<div class="verify-header-content">
+					<span class="return-back">
+						<img src="img/return_back.png">
+					</span>
+					<span class="verify-title">注册验证</span>
+				</div>
+			</div>
+			<!-- 头部结束 -->
+			<!-- 内容部分开始 -->
+			<div class="verify-container-back">
+				<div class="verify-content">
+					<div class="verify-back"></div>
+					<div class="unsafe-message-content">
+						<p>需要发送<span v-text="verifyType"></span>验证的手机号码为：</p>
+						<p class="phone-num" v-text="userPhone"></p>
+						<div class="code-area">
+							<input type="tel" name="" maxlength="6" v-model="userVerify" class="code-input" id="" placeholder="请输入验证码" />
+							<button class="code-btn" :disabled="!isSend" :class="{'code-btn-active': isSend}" @click="sendCode" id="send-code"
+							 v-text="verifyCode"></button>
+						</div>
+						<button class="next-step" :class="{'next-step-active' : btnShow}" :disabled="isNextSend" id="next-step">下一步</button>
+					</div>
+					<div class="verify-tips">
+						<span>遇到问题？请 </span>
+						<span class="contact-custom">联系客服</span>
+					</div>
+					<div id="captcha"></div>
+				</div>
+			</div>
+		</div>
+		<!-- 内容部分结束 -->
+		<!--toast弹框显示开始-->
+		<div class="outerToast" id="toast_div">
+			<div class="innerToast">
+				<span class="toast" id="showToast"></span>
+			</div>
+		</div>
+		<!--toast弹框显示结束-->
+
+		<!-- 开发环境版本，包含了有帮助的命令行警告 -->
+		<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+		<!-- 生产环境版本，优化了尺寸和速度 -->
+		<!-- <script src="https://cdn.jsdelivr.net/npm/vue"></script> -->
+		<!-- vue数据渲染 -->
+		<script src="https://cdn.bootcss.com/axios/0.19.0-beta.1/axios.min.js"></script>
+		<!-- uni 的 SDK -->
+		<script type="text/javascript" src="https://js.cdn.aliyun.dcloud.net.cn/dev/uni-app/uni.webview.1.5.1.js"></script>
+		<!-- 网易云盾滑块验证码 -->
+		<script charset="UTF-8" type="text/javascript" src="http://cstaticdun.126.net/load.min.js?t=201903281201"></script>
+		<!-- 获取ip地址 -->
+		<script src="http://pv.sohu.com/cityjson?ie=utf-8"></script>
+		<!-- 本页面公共方法js -->
+		<script src="js/verify-code.js"></script>
+		<script>
+			var captchaIns;
+			var baseUrl = 'http://192.168.8.123:7076'
+			var phone = getQueryVariable("phone");
+			var tongdunNo = getQueryVariable("tongdunNo");
+			var openid = getQueryVariable("openid");
+			// 验证码
+			var verificationCode = '';
+			const app = new Vue({
+				el: '#app',
+				data: {
+					userPhone: '', //手机号显示
+					verifyType: '', //页面显示短信还是语音文字
+					verifyCode: '发送验证码', //获取验证码按钮文字
+					timer: null,
+					userVerify: '', //验证码
+					isSend: true, //发送验证码按钮及能否点击
+					btnShow: false, // 按钮下一步的颜色高亮
+					isNextSend: true, // 控制下一步的按钮是否可点击
+					yundunNo: '', //网易云盾编号
+					safetyType: '' // 为1发送短信验证码,为2发送语音验证码
+				},
+				mounted() {
+					this.userPhone = phone;
+					/* 同盾校验手机号,是发送语音验证码还是短信验证码 */
+					this.checktongDunPhone();
+					let _this = this;
+
+					/* 网易云盾滑块验证码 */
+					initNECaptcha({
+						element: '#captcha',
+						captchaId: '2ccea1a4b55c4368a68d923bc03b55c7',
+						mode: 'popup',
+						width: '320px',
+						onClose: function(e) {
+							// 弹出关闭结束后将会触发该函数
+						},
+						enableClose: true, // 由业务方控制验证码弹框关闭
+						onVerify: function(err, ret) {
+							// 用户验证码验证成功后，进行实际的提交行为
+							// todo
+							if (!err) {
+								_this.yundunNo = ret['validate'];
+								// 验证成功后，调用close方法关闭弹框（enableClose为true时调用）
+								captchaIns.close();
+								_this.isSend = false;
+								_this.countDown(); // 调用发送短信的方法
+								
+
+							}
+						}
+					}, function onReady(instance) {
+						// 初始化成功后得到验证实例instance，可以调用实例的方法
+						captchaIns = instance
+					}, function(err) {
+						// 初始化失败后触发该函数，err对象描述当前错误信息
+						console.log("网易云验证码错误" + err);
+					});
+				},
+				methods: {
+					/*
+					 同盾校验手机号,是发送语音验证码还是短信验证码
+					  */
+					checktongDunPhone() {
+						let _this = this;
+						var param = {
+							data: {
+								phone: phone,
+								tongdunNo: tongdunNo
+							}
+						}
+						axios({
+							method: 'post',
+							url: baseUrl + '/user/verifyTongDunRiskByPhone',
+							data: param
+						}).then(response => {
+							let res = response.data;
+							let code = res.code;
+							if (code == '0001') {
+								_this.safetyType = res.data.safety;
+								// safety 为1发送短信验证码,为2发送语音验证码
+								if (_this.safetyType == 1) { //发送短信验证码
+									_this.verifyType = "短信"
+								}
+
+								if (_this.safetyType == 2) { //发送语音验证码
+									_this.verifyType = "语音"
+								}
+
+							} else {
+								showToast('服务异常');
+							}
+
+						}).catch(error => {
+							console.log("同盾校验手机号错误" + error);
+						});
+					},
+					/*
+					 点击验证码发送按钮
+					  */
+					sendCode() {
+						if('' == this.safetyType || null == this.safetyType || undefined == this.safetyType) {
+							// 判断发送语音还是短信
+							this.$options.methods.checktongDunPhone();
+						}
+						// 点击发送验证码按钮打开滑块验证码弹窗
+						captchaIns && captchaIns.popUp();
+						// 每次打开滑块验证码弹窗初始化
+						captchaIns && captchaIns.refresh();
+
+					},
+					countDown() {
+						if ('' != this.userPhone && null != this.userPhone && undefined != this.userPhone) {
+							const count = 60;
+							let times = 60;
+							if (!this.timer) {
+								this.isSend = false; // 按钮禁用
+								this.getCode(); // 调用发送短信的方法
+								this.timer = setInterval(() => { // 倒计时;
+									if (times > 0 && times <= count) {
+										this.verifyCode = times-- + '秒后重新发送'
+									} else {
+										this.isSend = true; // 按钮可用
+										if (this.safetyType == 1) {
+											this.verifyCode = '发送短信验证码';
+										} else if (this.safetyType == 2) {
+											this.verifyCode = '发送语音验证码';
+										}
+										clearInterval(this.timer);
+										this.timer = null;
+									}
+								}, 1000);
+							}
+						}
+					},
+					/* 
+						获取验证码接口
+					 */
+					getCode() {
+						let _this = this;
+						let codeData = {
+							data: {
+								phone: phone,
+								yidunCode: _this.yundunNo,
+								codeType: _this.safetyType,
+								functionType: 0
+							}
+						}
+						// 获取验证码
+						axios.post(baseUrl + '/user/getVerificationCode', codeData).then(response => {
+							let res = response.data;
+							let code = res.code;
+							let message = res.message;
+							if (code == '0001') {
+								console.log(res.data.cdTime);
+							} else {
+								showToast(message);
+							}
+
+						}).catch(error => {
+							console.log("获取验证码错误" + error);
+						});
+					}
+				},
+				watch: {
+					/*
+					 监听验证码位数是否是6位 
+					 */
+					userVerify() {
+						if (this.userVerify.length === 6) {
+							verificationCode = this.userVerify;
+							this.btnShow = true;
+							this.isNextSend = false;
+						} else {
+							this.btnShow = false;
+							this.isNextSend = true;
+						}
+					}
+				}
+			})
+
+
+
+			/* 触发uni-app方法 */
+			document.addEventListener('UniAppJSBridgeReady', function() {
+
+				document.querySelector('#next-step').addEventListener('click', function(evt) {	
+					/* 
+						获取系统信息
+						 sid:渠道识别号
+						 regip:ip地址
+						 phonetype:手机型号
+						 imei:手机唯一标识
+						 appVersion:app版本号
+					*/
+					let deviceInfo = {
+						sid: 'test', //渠道识别号
+						regip: returnCitySN["cip"], //ip地址
+						phonetype: plus.device.model, //手机型号
+						imei: plus.device.uuid, //设备标识
+						appVersion: plus.runtime.version //app版本号
+					}
+					// 点击下一步校验验证码
+					let params = {
+						data: {
+							sid: deviceInfo.sid,
+							regip: deviceInfo.regip,
+							phonetype: deviceInfo.phonetype,
+							imei: deviceInfo.imei,
+							appVersion: deviceInfo.appVersion,
+							phone: phone,
+							verificationCode: verificationCode,
+							resource: 6,
+							openid: openid
+						}
+					}
+
+					// 校验验证码(语音/短信)
+					axios({
+						method: 'post',
+						url: baseUrl + '/user/verifyVerificationCode',
+						data: params
+
+					}).then(response => {
+						let res = response.data;
+						let code = res.code;
+						let message = res.message;
+						if (code == '0001') {
+							let regsInfo = JSON.stringify(res.data);
+							// console.log(regsInfo);
+							// 验证码校验成功跳转到设置密码界面
+							uni.navigateTo({
+								url: '/pages/set-password/set-password?regsInfo=' + regsInfo
+							});
+						} else {
+							showToast(message);
+						}
+
+					}).catch(error => {
+						console.log("校验验证码错误" + error)
+					})
+				});
+
+				// 点击页面左上角返回
+				document.querySelector(".return-back").addEventListener('click', function() {
+					uni.navigateBack({
+						delta: 1
+					});
+				})
+
+
+			});
+		</script>
+	</body>
+</html>

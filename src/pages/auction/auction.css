@@ -1,0 +1,185 @@
+/* 	
+	竞拍列表-样式
+	薛毅飞 
+ */
+$color-fff: #fff;
+$color-000: #000;
+$color-333: #333;
+$color-666: #666;
+$color-999: #999;
+$color-f2f2f2: #f2f2f2;
+$color-ff911b: #ff911b;
+$color-f1f1f1: #f1f1f1;
+$color-0fc733: #0fc733;
+$color-fff5e7: #fff5e7;
+$color-fa503d: #fa503d;
+
+$color-ffa50d: #ffa50d;
+$color-fb6c19: #fb6c19;
+
+$size-24: 24px;
+$size-28: 28px;
+$size-32: 32px;
+$size-40: 40px;
+
+/* 分类导航-start */
+.nav-bar{
+	height: 162px;
+}
+.scroller {
+	height: 162px;
+	padding: 28px 25px;
+	padding-right: 0;
+	background-color: $color-fff;
+	flex-direction: row;
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+}
+.scroller-tab-list {
+	width: 155px;
+	height: 108px;
+	background-image: linear-gradient(to left, $color-f2f2f2, $color-f2f2f2);
+	border-radius: 8px;
+	padding: 14px;
+	margin-right: 26px;
+	justify-content: center;
+	align-items: center;
+	position: relative;
+}
+.scroller-tab-list-select{
+	background-image: linear-gradient(to bottom right, #FFC20B, #FE9402);
+}
+.scroller-tab-last-list {
+	margin-right: 0px;
+}
+.scroller-active{
+	width: 155px;
+	height: 108px;
+	border-radius: 8px;
+	position: absolute;
+	left: 0;
+	top: 0;
+}
+.scroller-img {
+	width: 36px;
+	height: 36px;
+	margin-bottom: 8px;
+}
+.scroller-text {
+	display: block;
+	font-size: 28px;
+	font-weight: 400;
+	color: $color-333;
+	line-height: 28px;
+	text-align: center;
+}
+.scroller-text-acitve {
+	color: $color-fff;
+}
+/* 分类导航-end */
+/* 选项卡-start */
+.goods-tab {
+	align-items: flex-start;
+	flex-direction: row;
+	height: 84px;
+	background-color: $color-f2f2f2;
+	position: relative;
+}
+.goods-tab-item {
+	flex: 1;
+	height: 84px;
+}
+.goods-tab-item-text{
+	flex: 1;
+	font-size: 28px;
+	/* font-weight: 500; */
+	color: $color-333;
+	line-height: 78px;
+	text-align: center;
+}
+.goods-tab-item-select{
+	color: $color-ff911b;
+}
+.goods-tab-selected {
+	width: 0;
+	height: 6px;
+	background-color: $color-ff911b;
+	border-radius: 3px;
+	margin-left: 40px;
+}
+.goods-tab-selected{
+	
+}
+/* 选项卡-end */
+
+.auction{
+	flex: 1;
+}
+.slider{
+	flex: 1;
+	background-color: #F0F0F0;
+	flex-direction: row;
+}
+.slider-content{
+	flex: 1;
+	width: 750px;
+}
+.list{
+	width: 750px;
+	flex: 1;
+}
+.cell{
+	width: 750px;
+	margin-bottom: 1px;
+}
+.refresh{
+	flex-direction: row;
+	justify-content: center;
+}
+.loading {
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
+	width: 750px;
+	height: 80px;
+	padding: 20px 0 10px;
+}
+.loading-text{
+	font-size: 28px;
+	color: #888;
+}
+.loading-icon{
+	height: 40px;
+	width: 40px;
+	color: #999999;
+	margin-right: 10px;
+}
+
+
+.no-content{
+		width: 750upx;
+		position: fixed;
+		left: 0;
+		top: 350upx;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+	.no-content-img{
+		width: 263upx;
+		height: 228upx;
+	}
+	.no-content-text{
+		font-size: 32upx;
+		line-height: 50upx;
+		color: #333;
+		text-align: center;
+	}
+	.no-content-desc{
+		font-size: 28upx;
+		line-height: 50upx;
+		color: #666;
+		text-align: center;
+	}
